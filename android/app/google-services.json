@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "210400931416",
+    "project_id": "notification-app-123456",
+    "storage_bucket": "notification-app-123456.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210400931416:android:c74cbf033c361d054f642d",
+        "android_client_info": {
+          "package_name": "com.example.notifyapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVslo3L9xov35TK_FzrDu3-l092F9u8ww"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
