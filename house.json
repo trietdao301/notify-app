@@ -1,0 +1,176 @@
+{
+  "house": [
+    {
+      "houseId": "house_128",
+      "ownerId": "user_128",
+      "description": "Luxury 5-bedroom estate with private amenities",
+      "houseType": "single family home",
+      "listing": {
+        "price": {
+          "amount": 950000.0,
+          "currency": "USD"
+        },
+        "status": "active",
+        "listingType": "sale",
+        "rentalDetails": {
+          "monthlyRent": 4500.0,
+          "securityDeposit": 9000.0,
+          "leaseTermMonths": 12,
+          "availabilityDate": "2025-09-01T00:00:00Z"
+        },
+        "listedTime": "2025-03-10T15:00:00Z",
+        "openHouseSchedule": [
+          {
+            "date": "2025-04-15",
+            "startTime": "16:00:00",
+            "endTime": "20:00:00"
+          }
+        ]
+      },
+      "availability": {
+        "isOccupied": false,
+        "showingTimes": [
+          {
+            "date": "2025-04-12",
+            "startTime": "15:00:00",
+            "endTime": "18:00:00"
+          }
+        ]
+      },
+      "address": {
+        "street": "777 Stu Road",
+        "district": "Roland Park",
+        "city": "Baltimore",
+        "state": "MD",
+        "postalCode": "21210",
+        "country": "USA",
+        "neighborhood": "Roland Park",
+        "walkScore": 80,
+        "transitScore": 70
+      },
+      "gpsLocation": {
+        "latitude": 39.3550,
+        "longitude": -76.6378
+      },
+      "media": [
+        {
+          "id": 1,
+          "mediaType": "image",
+          "description": "Front view of the estate",
+          "fileName": "front-view-estate.jpg",
+          "cloudURL": "https://storage.firebase.com/house_128/front-view-estate.jpg",
+          "uploadDate": "2025-03-10T15:30:00Z",
+          "sizeBytes": 2600000
+        },
+        {
+          "id": 2,
+          "mediaType": "video",
+          "description": "Luxury Estate Tour",
+          "fileName": "estate-tour.mp4",
+          "cloudURL": "https://storage.firebase.com/house_128/estate-tour.mp4",
+          "uploadDate": "2025-03-10T16:00:00Z",
+          "sizeBytes": 130000000
+        }
+      ],
+      "details": {
+        "bedrooms": 5,
+        "bathrooms": 4.5,
+        "houseSize": {
+          "amount": 4500,
+          "unit": "square foot"
+        },
+        "yearBuilt": 2020,
+        "parking": {
+          "garageSpaces": 3,
+          "drivewaySpaces": 4
+        },
+        "lotSize": {
+          "amount": 0.75,
+          "unit": "acre"
+        },
+        "energyEfficiency": {
+          "rating": "A+",
+          "solarPanels": true
+        }
+      },
+      "features": {
+        "house/interior/livingRoom/fireplace": {
+          "name": "Fireplace",
+          "description": "Grand gas fireplace with custom stonework",
+          "isHighlight": true,
+          "attributes": [{ "style": "Luxury" }, { "material": "Stone" }],
+          "media": [
+            {
+              "id": 1,
+              "mediaType": "image",
+              "description": "Grand fireplace view",
+              "fileName": "fireplace-stone-grand.jpg",
+              "cloudURL": "https://storage.firebase.com/house_128/fireplace-stone-grand.jpg",
+              "uploadDate": "2025-03-10T15:45:00Z",
+              "sizeBytes": 2400000
+            }
+          ]
+        },
+        "house/exterior/backyard/pool": {
+          "name": "Luxury Pool",
+          "description": "Heated Olympic-style pool with jacuzzi",
+          "isHighlight": true,
+          "attributes": [{ "size": "50x25 ft" }, { "depth": "8 ft" }],
+          "media": [
+            {
+              "id": 1,
+              "mediaType": "image",
+              "description": "Luxury pool with jacuzzi",
+              "fileName": "pool-jacuzzi.jpg",
+              "cloudURL": "https://storage.firebase.com/house_128/pool-jacuzzi.jpg",
+              "uploadDate": "2025-03-10T16:15:00Z",
+              "sizeBytes": 4000000
+            }
+          ]
+        },
+        "community/commonArea/": {
+          "name": "Private Gym",
+          "description": "Exclusive community gym with fitness equipment",
+          "isHighlight": false,
+          "attributes": [
+            { "capacity": "20 people" },
+            { "amenities": "Treadmills, Weights, Yoga Studio" }
+          ]
+        },
+        "nearby/parks/": {
+          "name": "Druid Hill Park",
+          "description": "Expansive park with zoo and conservatory",
+          "isHighlight": true,
+          "attributes": [
+            { "distance": "1.0 miles" },
+            { "features": "Zoo, Conservatory, Trails" }
+          ]
+        }
+      },
+      "majorEvents": {
+        "event_001": {
+          "eventCategory": "house/pricing",
+          "eventName": "price adjustment",
+          "eventDescription": "Initial listing price set",
+          "attributes": {
+            "price": 980000,
+            "currency": "USD"
+          },
+          "eventDate": "2025-02-20",
+          "eventAffectLevel": 4
+        },
+        "event_002": {
+          "eventCategory": "house/pricing",
+          "eventName": "price reduction",
+          "eventDescription": "Price adjusted for luxury market",
+          "attributes": {
+            "price": 950000,
+            "currency": "USD"
+          },
+          "eventDate": "2025-03-20",
+          "eventAffectLevel": 5
+        }
+      }
+    }
+  ]
+}

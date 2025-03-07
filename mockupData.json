@@ -1,0 +1,115 @@
+{
+    "users": {
+      "user_123": {
+        "userID": "user_123",
+        "phoneNumber": "+1-555-123-4567",
+        "emailAddress": "john.doe@email.com",
+        "preferences": [
+          "pet-friendly",
+          "modern-style",
+          "price-range-400k-600k"
+        ],
+        "savedProperties": ["prop_789", "prop_456"]
+      }
+    },
+  
+    "properties": {
+      "prop_789": {
+        "propertyID": "prop_789",
+        "userID": "user_123",
+        "listedPrice": 549000.00,
+        "propertyDescription": "Modern 3-bedroom townhouse with stunning city views",
+        "propertyAddress": "123 Main Street, Cityville, ST 12345",
+        "propertyLocation": {
+          "latitude": 37.7749,
+          "longitude": -122.4194
+        },
+        "propertyAmenities": ["amn_001", "amn_002", "amn_003"],
+        "cloudPath": "properties/prop_789/",
+        "propertyStatus": "active",
+        "propertiesType": "townhouse",
+        "propertyTags": ["tag_001", "tag_002"],
+        "propertyPostedDates": "2024-01-15T08:00:00Z"
+      }
+    },
+  
+    "media": {
+      "img_001": {
+        "imageID": "img_001",
+        "propertyID": "prop_789",
+        "file_name": "front-view.jpg",
+        "cloudURL": "https://storage.firebase.com/prop_789/front-view.jpg",
+        "cloudPath": "/properties/prop_789/images/front-view.jpg",
+        "uploadDate": "2024-01-15T08:30:00Z",
+        "sizeBytes": 2048576,
+        "storageProvider": "firebase",
+        "propertyAmenities": ["Living Room", "Kitchen"]
+      },
+      "img_002": {
+        "imageID": "img_002",
+        "propertyID": "prop_789",
+        "file_name": "kitchen.jpg",
+        "cloudURL": "https://storage.firebase.com/prop_789/kitchen.jpg",
+        "cloudPath": "/properties/prop_789/images/kitchen.jpg",
+        "uploadDate": "2024-01-15T08:31:00Z",
+        "sizeBytes": 1848576,
+        "storageProvider": "firebase",
+        "propertyAmenities": ["Modern Kitchen", "Stainless Appliances"]
+      }
+    },
+  
+    "amenities": {
+      "amn_001": {
+        "amenityID": "amn_001",
+        "propertyID": "prop_789",
+        "amenityName": "Central Air Conditioning",
+        "cloudPath": "/amenities/central-ac.png"
+      },
+      "amn_002": {
+        "amenityID": "amn_002",
+        "propertyID": "prop_789",
+        "amenityName": "In-unit Laundry",
+        "cloudPath": "/amenities/laundry.png"
+      }
+    },
+  
+    "tags": {
+      "tag_001": {
+        "tagID": "tag_001",
+        "tagName": "pet-friendly",
+        "propertyID": "prop_789"
+      },
+      "tag_002": {
+        "tagID": "tag_002",
+        "tagName": "close-to-transit",
+        "propertyID": "prop_789"
+      }
+    },
+  
+    "chatContent": {
+      "chat_001": {
+        "userID": "user_456",
+        "propertyID": "prop_789",
+        "textMessages": "Is this property still available?",
+        "emailAddress": "interested.buyer@email.com",
+        "phoneNumber": "+1-555-987-6543"
+      }
+    },
+  
+    "searchResults": {
+      "search_001": {
+        "userID": "user_456",
+        "propertiesID": ["prop_789", "prop_456", "prop_123"],
+        "propertiesPrice": 549000.00,
+        "propertiesDescription": "Modern 3-bedroom townhouse with stunning city views",
+        "propertiesAddress": "123 Main Street, Cityville, ST 12345",
+        "propertiesLocation": {
+          "latitude": 37.7749,
+          "longitude": -122.4194
+        },
+        "propertiesImages": ["img_001", "img_002"],
+        "propertiesAmenities": ["amn_001", "amn_002"],
+        "propertiesPostedDates": "2024-01-15T08:00:00Z"
+      }
+    }
+  }

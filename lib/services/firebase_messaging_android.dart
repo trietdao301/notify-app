@@ -12,7 +12,11 @@ class FirebaseMessagingAndroid {
     // ignore: unused_local_variable
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
+      announcement: false,
       badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
       sound: true,
     );
 

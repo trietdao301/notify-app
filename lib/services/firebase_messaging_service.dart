@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -40,6 +41,18 @@ class FirebaseMessagingService {
     // The onMessageOpenedApp event is triggered when the app is started
     // from a notification
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
+
+  @pragma('vm:entry-point')
+  Future<void> _firebaseMessagingBackgroundHandler(
+    RemoteMessage message,
+  ) async {
+    // If you're going to use other Firebase services in the background, such as Firestore,
+    // make sure you call `initializeApp` before using other Firebase services.
+    await Firebase.initializeApp();
+
+    print("Handling a background message: ${message.messageId}");
   }
 
   /// Handles incoming foreground messages.
@@ -49,13 +62,14 @@ class FirebaseMessagingService {
   ///
   /// [message] is the incoming remote message that contains the notification.
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
+    print("Foreground message received: ${message.notification?.title}");
     final notification = message.notification;
+
     if (kIsWeb) {
       return;
     }
     // Handle notifications for Android and iOS
     if (notification != null && !kIsWeb) {
-      // Show a local notification using FlutterLocalNotificationsPlugin
       await _localNotifications.show(
         notification.hashCode, // Unique identifier for the notification
         notification.title, // Notification title
