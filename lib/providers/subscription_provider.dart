@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:notifyapp/models/subscription.dart';
+import 'package:notifyapp/providers/fcm_provider.dart';
 
-class NotificationSubscriptionProvider
-    extends AsyncNotifier<List<Subscription>> {
+class SubscriptionProvider extends AsyncNotifier<List<Subscription>> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
@@ -12,7 +12,7 @@ class NotificationSubscriptionProvider
   Future<List<Subscription>> build() async {
     final currentUser = auth.currentUser;
     if (currentUser != null) {
-      return getSubscriptionsByUser(currentUser.uid);
+      return await getSubscriptionsByUser(currentUser.uid);
     }
     print("current user is null, so subscription list is empty");
     return [];
@@ -55,6 +55,7 @@ class NotificationSubscriptionProvider
           'Subscribed to property ID: $documentId with '
           'channel: ${channelToAdd.name}, alert: ${alertsToAdd}',
         );
+        await ref.read(fcmProvider).subscribeToPropertyTopic(propertyId);
       } catch (e) {
         print('Error subscribing to property: $e');
       }
@@ -89,6 +90,7 @@ class NotificationSubscriptionProvider
           'Unsubscribed to property ID: $documentId with '
           'removing channel: ${channelToRemove.name}, removing alert: ${alertToRemove != null ? alertToRemove.name : 'None'}',
         );
+        await ref.read(fcmProvider).unsubscribeFromPropertyTopic(propertyId);
       } catch (e) {
         print('Error unsubscribing to property: $e');
       }
@@ -99,6 +101,6 @@ class NotificationSubscriptionProvider
 }
 
 final subscriptionProvider =
-    AsyncNotifierProvider<NotificationSubscriptionProvider, List<Subscription>>(
-      NotificationSubscriptionProvider.new,
+    AsyncNotifierProvider<SubscriptionProvider, List<Subscription>>(
+      SubscriptionProvider.new,
     );
