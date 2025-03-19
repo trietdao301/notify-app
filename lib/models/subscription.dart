@@ -1,28 +1,77 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:notifyapp/models/enums/field_can_change.dart';
 
 // Enum for notification channels
 enum NotificationChannel { email, sms, app }
 
-// Enum for alert event categories
-enum AlertEvent { pricing, tax, ownership }
-
 class Subscription {
-  final String documentId;
-  final String userId;
-  final String propertyId;
-  final bool isSubscribed;
-  final Set<NotificationChannel> notificationPrefs;
-  final Set<AlertEvent> alertEvents;
+  String _documentId;
+  String _userId;
+  String _propertyId;
+  bool _isSubscribed;
+  Set<NotificationChannel> _notificationChannels;
+  Set<FieldCanChange> _alertPreferences;
 
   Subscription({
-    required this.documentId,
-    required this.userId,
-    required this.propertyId,
-    required this.isSubscribed,
-    required this.notificationPrefs,
-    required this.alertEvents,
-  });
+    required String documentId,
+    required String userId,
+    required String propertyId,
+    required bool isSubscribed,
+    required Set<NotificationChannel> notificationChannels,
+    required Set<FieldCanChange> alertPreferences,
+  }) : _documentId = documentId,
+       _userId = userId,
+       _propertyId = propertyId,
+       _isSubscribed = isSubscribed,
+       _notificationChannels = notificationChannels,
+       _alertPreferences = alertPreferences;
+
+  // Getters
+  String get documentId => _documentId;
+  String get userId => _userId;
+  String get propertyId => _propertyId;
+  bool get isSubscribed => _isSubscribed;
+  Set<NotificationChannel> get notificationChannels => _notificationChannels;
+  Set<FieldCanChange> get alertPreferences => _alertPreferences;
+
+  // Setters
+  set documentId(String value) => _documentId = value;
+  set userId(String value) => _userId = value;
+  set propertyId(String value) => _propertyId = value;
+  set isSubscribed(bool value) => _isSubscribed = value;
+  set notificationChannels(Set<NotificationChannel> value) =>
+      _notificationChannels = value;
+  set alertPreferences(Set<FieldCanChange> value) => _alertPreferences = value;
+
+  factory Subscription.fromJson(Map<String, dynamic> json) {
+    return Subscription(
+      documentId: json['documentId'] as String? ?? '',
+      userId: json['userId'] as String? ?? '',
+      propertyId: json['propertyId'] as String? ?? '',
+      isSubscribed: json['isSubscribed'] as bool? ?? false,
+      notificationChannels:
+          (json['notificationChannels'] as List<dynamic>? ?? [])
+              .map(
+                (e) => NotificationChannel.values.firstWhere(
+                  (channel) => channel.name == e as String,
+                  orElse: () => NotificationChannel.app,
+                ),
+              )
+              .toSet(),
+      alertPreferences:
+          (json['alertPreferences'] as List<dynamic>? ?? [])
+              .map(
+                (e) => FieldCanChange.values.firstWhere(
+                  (field) => field.name == e as String,
+                  orElse: () => throw FormatException('Unknown field: $e'),
+                ),
+              )
+              .toSet(),
+    );
+  }
 
   factory Subscription.fromFirestore(
     Map<String, dynamic> data,
@@ -30,24 +79,24 @@ class Subscription {
   ) {
     return Subscription(
       documentId: documentId,
-      userId: data['userId'] ?? '',
-      propertyId: data['propertyId'] ?? '',
-      isSubscribed: data['isSubscribed'] ?? false,
-      notificationPrefs:
-          (data['notificationPrefs'] as List<dynamic>? ?? [])
+      userId: data['userId'] as String? ?? '',
+      propertyId: data['propertyId'] as String? ?? '',
+      isSubscribed: data['isSubscribed'] as bool? ?? false,
+      notificationChannels:
+          (data['notificationChannels'] as List<dynamic>? ?? [])
               .map(
                 (e) => NotificationChannel.values.firstWhere(
-                  (channel) => channel.name == e,
+                  (channel) => channel.name == e as String,
                   orElse: () => NotificationChannel.app,
                 ),
               )
               .toSet(),
-      alertEvents:
-          (data['alertEvents'] as List<dynamic>? ?? [])
+      alertPreferences:
+          (data['alertPreferences'] as List<dynamic>? ?? [])
               .map(
-                (e) => AlertEvent.values.firstWhere(
-                  (event) => event.name == e,
-                  orElse: () => AlertEvent.pricing,
+                (e) => FieldCanChange.values.firstWhere(
+                  (field) => field.name == e as String,
+                  orElse: () => throw FormatException('Unknown field: $e'),
                 ),
               )
               .toSet(),
@@ -56,12 +105,12 @@ class Subscription {
 
   Map<String, dynamic> toFirestore() {
     return {
-      'userId': userId,
-      'propertyId': propertyId,
-      'isSubscribed': isSubscribed,
-      'notificationPrefs':
-          notificationPrefs.map((channel) => channel.name).toList(),
-      'alertEvents': alertEvents.map((event) => event.name).toList(),
+      'userId': _userId,
+      'propertyId': _propertyId,
+      'isSubscribed': _isSubscribed,
+      'notificationChannels':
+          _notificationChannels.map((channel) => channel.name).toList(),
+      'alertPreferences': _alertPreferences.map((field) => field.name).toList(),
     };
   }
 }

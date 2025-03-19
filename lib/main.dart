@@ -1,10 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notifyapp/models/user.dart';
-import 'package:notifyapp/screens/home_screen/home_screen.dart';
-import 'package:notifyapp/services/firebase_messaging_service.dart';
+import 'package:notifyapp/repositories/cache_subscription_repository.dart';
+import 'package:notifyapp/router/router.dart';
+import 'package:notifyapp/fcm_service/firebase_messaging_service.dart';
+import 'package:notifyapp/services/cache_subscription_service.dart';
 import 'firebase_options.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:notifyapp/models/user.dart' as UserModel;
@@ -16,14 +20,24 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     print("Firebase initialized successfully");
+    final db = await initializeDb();
+    await createAndSignInFirebaseAuth();
+    final CacheSubscriptionRepository cacheSubscriptionRepository =
+        CacheSubscriptionRepositoryImpl(db: db);
+    final CacheSubscriptionService cacheSubscriptionService =
+        CacheSubscriptionServiceImp(
+          cacheSubscriptionRepository: cacheSubscriptionRepository,
+        );
 
-    final messagingService = FirebaseMessagingService();
+    final messagingService = FirebaseMessagingService(
+      auth: FirebaseAuth.instance,
+      cacheSubscriptionService: cacheSubscriptionService,
+    );
+
     await messagingService.initialize();
   } catch (error) {
     print("Firebase initialization failed: $error");
   }
-
-  await createAndSignInFirebaseAuth();
 
   runApp(ProviderScope(child: MyApp()));
 }
@@ -31,24 +45,19 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Simple Flutter App',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: RealPropertyApp(),
-    );
-  }
-}
-
-class RealPropertyApp extends StatelessWidget {
-  const RealPropertyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      builder: FToastBuilder(),
       title: 'Real Property Records Notification',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: HomeScreen(),
-      // routes: {'/house_detail': (context) =>  HouseDetailScreen(house: null,)},
+      routerConfig: router,
+
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color.fromARGB(255, 249, 249, 249),
+        appBarTheme: AppBarTheme(color: Colors.white),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+        ),
+      ),
     );
   }
 }
@@ -110,4 +119,17 @@ Future<void> createAndSignInFirebaseAuth() async {
   } else {
     print('No valid user credential available to add to Firestore');
   }
+}
+
+Future<FirebaseFirestore> initializeDb() async {
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  if (kIsWeb) {
+    await db.enablePersistence(
+      const PersistenceSettings(synchronizeTabs: true),
+    );
+  } else if (!kIsWeb) {
+    db.settings = const Settings(persistenceEnabled: true);
+  }
+  db.settings = const Settings(cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
+  return db;
 }

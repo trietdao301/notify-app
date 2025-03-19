@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:notifyapp/screens/home_screen/property_card.dart';
+import 'package:notifyapp/features/property_list/widgets/property_card.dart';
 
 class PropertyInfo extends StatelessWidget {
   const PropertyInfo({super.key, required this.widget});

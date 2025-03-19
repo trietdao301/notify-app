@@ -6,27 +6,31 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-final fcmProvider = Provider<FcmService>((ref) => FcmService());
+abstract class FcmSubscribeService {
+  Future<void> subscribeToPropertyTopic(String propertyId);
+  Future<void> unsubscribeFromPropertyTopic(String propertyId);
+}
 
-class FcmService {
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-
-  // Replace with your actual HTTP Function URL
+class FcmSubscribeServiceImpl implements FcmSubscribeService {
+  final FirebaseMessaging messaging;
   static const String subscribeToTopicUrl =
       'https://subscribetotopic-xea7b3qtqq-uc.a.run.app';
   static const String unsubscribeFromTopicUrl =
       'https://unsubscribefromtopic-xea7b3qtqq-uc.a.run.app';
 
+  FcmSubscribeServiceImpl({required this.messaging});
+
+  @override
   Future<void> subscribeToPropertyTopic(String propertyId) async {
     final topic = 'property_$propertyId';
-    final String? fcmToken = await _messaging.getToken();
+    final String? fcmToken = await messaging.getToken();
     if (fcmToken == null) {
       throw Exception('FCM token is null');
     }
     try {
       if (!kIsWeb) {
         // For non-web platforms, use client-side subscription
-        await _messaging.subscribeToTopic(topic);
+        await messaging.subscribeToTopic(topic);
         print('Subscribed to FCM topic: $topic');
       } else if (kIsWeb) {
         final response = await _handlePostRequest(
@@ -42,15 +46,17 @@ class FcmService {
     }
   }
 
+  @override
   Future<void> unsubscribeFromPropertyTopic(String propertyId) async {
     final topic = 'property_$propertyId';
-    final String? fcmToken = await _messaging.getToken();
+    final String? fcmToken = await messaging.getToken();
     if (fcmToken == null) {
+      print("token is: ${fcmToken}");
       throw Exception('FCM token is null');
     }
     try {
       if (!kIsWeb) {
-        await _messaging.unsubscribeFromTopic(topic);
+        await messaging.unsubscribeFromTopic(topic);
         print('Unsubscribed from FCM topic: $topic');
       } else if (kIsWeb) {
         final response = await _handlePostRequest(

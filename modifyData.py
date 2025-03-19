@@ -4,13 +4,13 @@ from datetime import datetime
 import json
 
 # Initialize Firebase Admin SDK with your service account key
-cred = credentials.Certificate('notification-app-123456-firebase-adminsdk-fbsvc-8843c7914d.json')  # Update this path if needed
+cred = credentials.Certificate('notification-app-123456-firebase-adminsdk-fbsvc-caf496290a.json')  # Update this path if needed
 firebase_admin.initialize_app(cred)
 
 # Get a reference to Firestore
 db = firestore.client()
 
-# Extract the house object from the "property" array
+# Sample property object
 property = {
     'recordingDate': '20050923',
     'lastNameOrCorpName': 'SCOFIELD',
@@ -43,7 +43,7 @@ property = {
 # Import the house object into Firestore
 def import_house():
     try:
-        # Use the documentId (fixed typo from documentID) as the document ID
+        # Use the documentId as the document ID
         doc_id = property['documentId']
         db.collection('properties').document(doc_id).set(property)
         
@@ -51,6 +51,19 @@ def import_house():
     except Exception as e:
         print(f"Error importing house: {e}")
 
-# Run the import
+# Update editFlag and book fields for a property with documentId = '4'
+def update_property():
+    try:
+        # Directly update the document with ID '4'
+        db.collection('properties').document('4').update({
+            'editFlag': True,
+            'book': '450'  # Stored as string to match your sample data
+        })
+        print("Updated property with ID: '4'")
+    except Exception as e:
+        print(f"Error updating property: {e}")
+
+# Run the import and test the update function
 if __name__ == "__main__":
-    import_house()
+    # Update the property with documentId = '4'
+    update_property()

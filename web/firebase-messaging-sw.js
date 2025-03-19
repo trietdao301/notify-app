@@ -1,9 +1,9 @@
-// Please see this file for the latest firebase-js-sdk version:
-// https://github.com/firebase/flutterfire/blob/master/packages/firebase_core/firebase_core_web/lib/src/firebase_sdk_version.dart
+// firebase-messaging-sw.js
 importScripts("https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js");
 
-firebase.initializeApp({
+// Initialize Firebase app
+const firebaseApp = firebase.initializeApp({
   apiKey: "AIzaSyCFKAeQu3ZYTtyOQ0ZwrcUNxMTA8tRP5Uw",
   authDomain: "notification-app-123456.firebaseapp.com",
   projectId: "notification-app-123456",
@@ -12,14 +12,19 @@ firebase.initializeApp({
   appId: "1:210400931416:web:6c936727c2ef9f694f642d"
 });
 
-const messaging = firebase.messaging();
+// Initialize messaging
+const messaging = firebase.messaging(firebaseApp);
 
-
+// // Handle background messages
+// messaging.onBackgroundMessage(function(payload) {
+//   // console.log('[firebase-messaging-sw.js] Received background message:', payload);
   
-messaging.onBackgroundMessage((payload) => {
-  console.log("Received background message ", payload);
-  self.registration.showNotification(payload.notification.title, {
-      body: payload.notification.body,
-      icon: "/firebase-logo.png",
-  });
-});
+//   // // Customize notification (optional)
+//   // const notificationTitle = payload.notification?.title || 'Property Update';
+//   // const notificationOptions = {
+//   //   body: payload.notification?.body || 'A property has been updated.',
+//   //   icon: '/favicon.png' // Ensure this exists in web/
+//   // };
+
+//   // self.registration.showNotification(notificationTitle, notificationOptions);
+// });

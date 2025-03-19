@@ -34,7 +34,7 @@ class FirebaseMessagingWeb {
         // get the device fcm token
         token = await _firebaseMessaging.getToken(
           vapidKey:
-              "BCrhbk9zFreZrPtrMssC7Gx3fI3KyxgWMxpK_sEk6sDQirjRf-pIbpBlfC1JXZlVTh3HZw28e490fOuCZWcHpIo",
+              "BOWSk929uln4Dso2LcxTYdo1O6gN3EjJ-MDlIDy2OhNVCyaksHKzgqebAbHePAjd3iEtM-fxCdFX5GLzO0kj998",
         );
         print("for web device token: $token");
       } else {
@@ -42,7 +42,7 @@ class FirebaseMessagingWeb {
       }
       return token;
     } catch (e) {
-      print("failed to get device token");
+      print("failed to get device token. Error: ${e.toString()}");
       if (maxRetires > 0) {
         print("try after 10 sec");
         await Future.delayed(Duration(seconds: 10));
