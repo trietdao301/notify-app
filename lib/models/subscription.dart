@@ -13,7 +13,7 @@ class Subscription {
   String _propertyId;
   bool _isSubscribed;
   Set<NotificationChannel> _notificationChannels;
-  Set<FieldCanChange> _alertPreferences;
+  Set<FieldToSubscribe> _alertPreferences;
 
   Subscription({
     required String documentId,
@@ -21,7 +21,7 @@ class Subscription {
     required String propertyId,
     required bool isSubscribed,
     required Set<NotificationChannel> notificationChannels,
-    required Set<FieldCanChange> alertPreferences,
+    required Set<FieldToSubscribe> alertPreferences,
   }) : _documentId = documentId,
        _userId = userId,
        _propertyId = propertyId,
@@ -35,7 +35,7 @@ class Subscription {
   String get propertyId => _propertyId;
   bool get isSubscribed => _isSubscribed;
   Set<NotificationChannel> get notificationChannels => _notificationChannels;
-  Set<FieldCanChange> get alertPreferences => _alertPreferences;
+  Set<FieldToSubscribe> get alertPreferences => _alertPreferences;
 
   // Setters
   set documentId(String value) => _documentId = value;
@@ -44,7 +44,8 @@ class Subscription {
   set isSubscribed(bool value) => _isSubscribed = value;
   set notificationChannels(Set<NotificationChannel> value) =>
       _notificationChannels = value;
-  set alertPreferences(Set<FieldCanChange> value) => _alertPreferences = value;
+  set alertPreferences(Set<FieldToSubscribe> value) =>
+      _alertPreferences = value;
 
   factory Subscription.fromJson(Map<String, dynamic> json) {
     return Subscription(
@@ -64,7 +65,7 @@ class Subscription {
       alertPreferences:
           (json['alertPreferences'] as List<dynamic>? ?? [])
               .map(
-                (e) => FieldCanChange.values.firstWhere(
+                (e) => FieldToSubscribe.values.firstWhere(
                   (field) => field.name == e as String,
                   orElse: () => throw FormatException('Unknown field: $e'),
                 ),
@@ -94,7 +95,7 @@ class Subscription {
       alertPreferences:
           (data['alertPreferences'] as List<dynamic>? ?? [])
               .map(
-                (e) => FieldCanChange.values.firstWhere(
+                (e) => FieldToSubscribe.values.firstWhere(
                   (field) => field.name == e as String,
                   orElse: () => throw FormatException('Unknown field: $e'),
                 ),

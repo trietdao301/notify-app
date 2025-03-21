@@ -1,8 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:notifyapp/repositories/subscription_repository.dart';
-import 'package:notifyapp/fcm_service/fcm_subscribe_service.dart';
+import 'package:notifyapp/services/fcm_subscription_service.dart';
 import 'package:notifyapp/models/enums/field_can_change.dart';
 import 'package:notifyapp/models/subscription.dart';
 
@@ -11,12 +9,12 @@ abstract class SubscriptionService {
   Future<void> subscribeToProperty(
     String propertyId,
     NotificationChannel channelToAdd,
-    Set<FieldCanChange> alertsToAdd,
+    Set<FieldToSubscribe> alertsToAdd,
   );
   Future<void> unSubscribeToProperty(
     String propertyId,
     NotificationChannel channelToRemove,
-    Set<FieldCanChange> alertToRemove,
+    Set<FieldToSubscribe> alertToRemove,
   );
 }
 
@@ -42,7 +40,7 @@ class SubscriptionServiceImp implements SubscriptionService {
   Future<void> subscribeToProperty(
     String propertyId,
     NotificationChannel channelToAdd,
-    Set<FieldCanChange> preferenceToAdd,
+    Set<FieldToSubscribe> preferenceToAdd,
   ) async {
     final currentUser = auth.currentUser;
     if (currentUser != null) {
@@ -71,7 +69,7 @@ class SubscriptionServiceImp implements SubscriptionService {
   Future<void> unSubscribeToProperty(
     String propertyId,
     NotificationChannel channelToRemove,
-    Set<FieldCanChange> preferenceToRemove,
+    Set<FieldToSubscribe> preferenceToRemove,
   ) async {
     final currentUser = auth.currentUser;
     if (currentUser != null) {

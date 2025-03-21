@@ -1,20 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/widgets.dart';
-import 'package:notifyapp/repositories/property_notification_repository.dart';
 import 'package:notifyapp/models/enums/field_can_change.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:notifyapp/repositories/property_repository.dart';
 import 'package:notifyapp/repositories/subscription_repository.dart';
-import 'package:notifyapp/fcm_service/fcm_subscribe_service.dart';
+import 'package:notifyapp/services/fcm_subscription_service.dart';
 import 'package:notifyapp/features/property_list/providers/propert_list_state.dart';
 import 'package:notifyapp/global.dart';
 import 'package:notifyapp/models/property.dart';
 import 'package:notifyapp/models/subscription.dart';
 import 'package:notifyapp/services/property_service.dart';
 import 'package:notifyapp/services/subscription_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class PropertyListScreenNotifier
     extends StateNotifier<PropertyListScreenState> {
@@ -61,7 +58,7 @@ class PropertyListScreenNotifier
   Future<void> subscribeToProperty(
     String propertyId,
     NotificationChannel channelToAdd,
-    Set<FieldCanChange> alertsToAdd,
+    Set<FieldToSubscribe> alertsToAdd,
   ) async {
     return subscriptionService.subscribeToProperty(
       propertyId,
@@ -73,7 +70,7 @@ class PropertyListScreenNotifier
   Future<void> unSubscribeToProperty(
     String propertyId,
     NotificationChannel channelToRemove,
-    FieldCanChange? alertToRemove,
+    FieldToSubscribe? alertToRemove,
   ) async {
     return subscriptionService.unSubscribeToProperty(
       propertyId,

@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:notifyapp/models/Change.dart';
+import 'package:notifyapp/models/change.dart';
 import 'package:notifyapp/models/enums/field_can_change.dart';
 
 class PropertyNotification {
   final String id;
   final String propertyId;
   final int createdAt;
-  final Map<FieldCanChange, Change> changes; // Keys are FieldCanChange enums
+  final Map<FieldToSubscribe, Change> changes; // Keys are FieldCanChange enums
   final String? userId;
   final bool isRead;
 
@@ -31,7 +31,7 @@ class PropertyNotification {
     final changes = changesRaw.map(
       (key, value) => MapEntry(
         // Convert string key to FieldCanChange enum
-        FieldCanChange.values.firstWhere(
+        FieldToSubscribe.values.firstWhere(
           (field) => field.name == key,
           orElse: () => throw FormatException('Unknown field: $key'),
         ),

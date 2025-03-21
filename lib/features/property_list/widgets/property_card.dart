@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:line_icons/line_icon.dart';
 import 'package:notifyapp/features/property_list/providers/property_list_provider.dart';
+import 'package:notifyapp/features/property_list/widgets/preference_subscription_bottom_sheet.dart';
 import 'package:notifyapp/models/enums/field_can_change.dart';
 import 'package:notifyapp/models/subscription.dart';
 import 'package:notifyapp/models/property.dart';
@@ -94,21 +96,43 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 PropertyInfo(widget: widget),
-                _isLoading
-                    ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : Switch.adaptive(
-                      thumbIcon: widget.thumbIcon,
-                      value: _isSubscribed,
-                      onChanged: (newValue) => _onSubscriptionChanged(newValue),
-                    ),
+                Column(
+                  children: [
+                    _isLoading
+                        ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : _isSubscribed
+                        ? IconButton(
+                          onPressed: () => _onSubscriptionChanged(false),
+                          icon: Icon(Icons.star_rate),
+                        )
+                        : IconButton(
+                          onPressed: () => _onSubscriptionChanged(true),
+                          icon: Icon(Icons.star_border),
+                        ),
+                    _isLoading
+                        ? SizedBox.shrink()
+                        : _isSubscribed
+                        ? IconButton(
+                          onPressed:
+                              () => PreferenceSubscriptionBottomSheet.show(
+                                context,
+                                widget.property.parcelId.toString(),
+                              ),
+                          icon: Icon(Icons.expand_more),
+                        )
+                        : SizedBox.shrink(),
+                  ],
+                ),
               ],
             ),
           ],
@@ -150,7 +174,7 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
       await notifier.subscribeToProperty(
         widget.property.parcelId,
         NotificationChannel.app,
-        {FieldCanChange.book, FieldCanChange.editFlag},
+        {FieldToSubscribe.all},
       );
 
       toastification.show(

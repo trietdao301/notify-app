@@ -9,7 +9,7 @@ abstract class SubscriptionRepository {
     String userId,
     String propertyId,
     NotificationChannel channelToAdd,
-    Set<FieldCanChange> alertsToAdd,
+    Set<FieldToSubscribe> alertsToAdd,
     bool isSubscribing,
   );
   Future<List<Subscription>> getActiveSubscriptionsByUser(String userId);
@@ -40,7 +40,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     String userId,
     String propertyId,
     NotificationChannel channels,
-    Set<FieldCanChange> alerts,
+    Set<FieldToSubscribe> alerts,
     bool isSubscribing,
   ) async {
     final alertNames = alerts.map((alert) => alert.name).toList();
@@ -50,7 +50,10 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
         'propertyId': propertyId,
         'isSubscribed': true,
         'notificationChannels': FieldValue.arrayUnion([channels.name]),
-        'alertPreferences': FieldValue.arrayUnion(alertNames),
+        'alertPreferences':
+            alerts.contains(FieldToSubscribe.all)
+                ? ["all"]
+                : FieldValue.arrayUnion(alertNames),
       }, SetOptions(merge: true));
     } else if (!isSubscribing) {
       await db.collection('subscriptions').doc(documentId).set({

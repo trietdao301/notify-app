@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-enum FieldCanChange {
+enum FieldToSubscribe {
+  all("all"),
   recordingDate("recordingDate"),
   lastNameOrCorpName("lastNameOrCorpName"),
   firstName("firstName"),
@@ -29,10 +30,10 @@ enum FieldCanChange {
 
   final String name;
 
-  const FieldCanChange(this.name);
+  const FieldToSubscribe(this.name);
 
-  factory FieldCanChange.fromString(String input_field) {
-    for (FieldCanChange field in FieldCanChange.values) {
+  factory FieldToSubscribe.fromString(String input_field) {
+    for (FieldToSubscribe field in FieldToSubscribe.values) {
       if (field.name == input_field) {
         return field;
       }

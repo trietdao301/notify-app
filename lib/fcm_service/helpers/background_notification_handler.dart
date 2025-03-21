@@ -5,8 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:notifyapp/fcm_service/message_processor.dart';
-import 'package:notifyapp/models/Change.dart';
+import 'package:notifyapp/fcm_service/helpers/message_processor.dart';
+import 'package:notifyapp/models/change.dart';
 import 'package:notifyapp/models/enums/field_can_change.dart';
 import 'package:notifyapp/models/push_notification.dart';
 import 'package:notifyapp/models/subscription.dart';
@@ -57,11 +57,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
               throw Exception('No subscription found for property $propertyId'),
     );
 
-    Map<FieldCanChange, Change> changes = await MessageProcessor.processMessage(
-      propertyId,
-      message,
-      subscription,
-    );
+    Map<FieldToSubscribe, Change> changes =
+        await MessageProcessor.processMessage(
+          propertyId,
+          message,
+          subscription,
+        );
 
     PushNotification pushNotification = PushNotification(
       propertyId: propertyId,

@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:notifyapp/models/Change.dart';
+import 'package:notifyapp/models/change.dart';
 import 'package:notifyapp/models/enums/field_can_change.dart';
 
 class PushNotification {
   final String propertyId;
-  final Map<FieldCanChange, Change> changes;
+  final Map<FieldToSubscribe, Change> changes;
 
   PushNotification({required this.propertyId, required this.changes});
 
@@ -17,7 +17,7 @@ class PushNotification {
       throw Exception("Changes is empty in notification of ${propertyId}");
     }
     List<String> body = [];
-    changes.forEach((FieldCanChange key, Change value) {
+    changes.forEach((FieldToSubscribe key, Change value) {
       if (value.type == ChangeType.added) {
         body.add("${key.name}: ${value.type} ${value.newValue}");
       } else if (value.type == ChangeType.removed) {
@@ -37,13 +37,13 @@ class PushNotification {
       throw FormatException('Missing or empty propertyId in input map');
     }
 
-    final changes = <FieldCanChange, Change>{};
+    final changes = <FieldToSubscribe, Change>{};
 
     // Process all entries except propertyId
     input.forEach((key, value) {
       if (key != 'propertyId') {
         try {
-          final field = FieldCanChange.values.firstWhere(
+          final field = FieldToSubscribe.values.firstWhere(
             (f) => f.name == key,
             orElse: () => throw FormatException('Unknown field: $key'),
           );
