@@ -44,20 +44,15 @@ class UserSettingScreen extends ConsumerStatefulWidget {
 typedef MenuEntry = DropdownMenuEntry<String>;
 
 class _UserSettingScreenState extends ConsumerState<UserSettingScreen> {
-  bool _isSaving = false; // Track saving state for feedback
-
   @override
   void initState() {
     super.initState();
   }
 
   Future<void> _saveSettings() async {
-    setState(() {
-      _isSaving = true;
-    });
     try {
       final notifier = ref.read(userSettingScreenProvider.notifier);
-      await notifier.updateSettingDatabase();
+      await notifier.saveSetting();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Settings saved successfully")),
       );
@@ -66,10 +61,6 @@ class _UserSettingScreenState extends ConsumerState<UserSettingScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text("Error saving settings: $e")));
       print(e);
-    } finally {
-      setState(() {
-        _isSaving = false;
-      });
     }
   }
 
@@ -303,7 +294,7 @@ class _UserSettingScreenState extends ConsumerState<UserSettingScreen> {
                   FrequencyWidget(),
                   Center(
                     child:
-                        _isSaving
+                        state.isSaved
                             ? const CircularProgressIndicator()
                             : ElevatedButton(
                               onPressed: _saveSettings,

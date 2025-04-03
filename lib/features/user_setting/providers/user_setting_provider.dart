@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -13,56 +15,35 @@ import 'package:notifyapp/shared/providers/current_user_provider.dart';
 
 class UserSettingsNotifier extends StateNotifier<UserSettingState> {
   final Ref ref;
-  bool _isDisposed = false;
   final SubscriptionService subscriptionService;
 
   UserSettingsNotifier({required this.ref, required this.subscriptionService})
-    : super(UserSettingState()) {
-    fetchCurrentUserSetting(); // Initial fetch
-    _setupListener();
-  }
+    : super(UserSettingState());
 
   @override
   void dispose() {
-    _isDisposed = true;
     print("UserSettingsNotifier disposed at: ${DateTime.now()}");
     super.dispose();
   }
 
-  void _setupListener() {
-    ref.listen<CurrentUserProviderState>(currentUserProvider, (previous, next) {
-      print(
-        "currentUserProvider state changed: ${next.state} - ${DateTime.now()}",
-      );
-      if (_isDisposed) return;
-      _updateStateFromCurrentUser(next);
-    });
-  }
-
   Future<void> fetchCurrentUserSetting() async {
+    final currentUserState = ref.watch(currentUserProvider);
     print("fetchCurrentUserSetting started: ${DateTime.now()}");
-    if (_isDisposed) return;
-
-    final currentUserNotifier = ref.read(currentUserProvider.notifier);
-    final currentUserState = ref.read(currentUserProvider);
-
     // If the state is initial or loading, trigger a fetch
     if (currentUserState.state == CurrentUserProviderConcreteState.initial ||
         currentUserState.state == CurrentUserProviderConcreteState.loading) {
       print(
         "Triggering fetchCurrentUser due to initial/loading state: ${DateTime.now()}",
       );
-      await currentUserNotifier.fetchCurrentUser();
     }
-
-    final updatedState = ref.read(currentUserProvider);
     print(
-      "fetchCurrentUserSetting completed: ${updatedState.state} - ${DateTime.now()}",
+      "fetchCurrentUserSetting completed: ${currentUserState.state} - ${DateTime.now()}",
     );
-    _updateStateFromCurrentUser(updatedState);
+    _updateStateFromCurrentUser(currentUserState);
   }
 
   void _updateStateFromCurrentUser(CurrentUserProviderState currentUser) {
+    print(mounted);
     if (currentUser.state ==
         CurrentUserProviderConcreteState.fetchedCurrentUser) {
       if (currentUser.currentUser != null) {
@@ -97,7 +78,7 @@ class UserSettingsNotifier extends StateNotifier<UserSettingState> {
     Map<Day, ReceiveWindow>? customWindows,
     Frequency? frequency,
   }) {
-    if (_isDisposed) return;
+    print(mounted);
     try {
       final updatedSetting = UserSetting(
         notificationSetting:
@@ -110,6 +91,7 @@ class UserSettingsNotifier extends StateNotifier<UserSettingState> {
         userSetting: updatedSetting,
         state: UserSettingConcreteState.fetchedSetting,
         message: "Settings updated locally",
+        isSaved: false,
       );
     } on InvalidSelectedTimeException catch (e) {
       state = state.copyWith(
@@ -124,48 +106,28 @@ class UserSettingsNotifier extends StateNotifier<UserSettingState> {
     }
   }
 
-  Future<void> updateSettingDatabase() async {
+  Future<void> saveSetting() async {
     print("updateSettingDatabase started: ${DateTime.now()}");
-    if (_isDisposed) {
-      print("updateSettingDatabase aborted: Notifier disposed");
-      return;
-    }
-
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
-    try {
-      state = state.copyWith(
-        state: UserSettingConcreteState.loading,
-        message: "Saving settings...",
-      );
-      print("Set loading state: ${DateTime.now()}");
 
-      await currentUserNotifier.updateUserSetting(state.userSetting);
-      print("updateUserSetting completed: ${DateTime.now()}");
+    print("Set loading state: ${DateTime.now()}");
 
-      await subscriptionService.updateAllCurrentSubscriptionSetting(
-        state.userSetting,
-      );
-      print("updateAllCurrentSubscriptionSetting completed: ${DateTime.now()}");
+    state = state.copyWith(
+      state: UserSettingConcreteState.loading,
+      message: "Saving settings",
+    );
+    print(mounted);
 
-      if (!_isDisposed) {
-        state = state.copyWith(
-          state: UserSettingConcreteState.fetchedSetting,
-          message: "Settings saved to database",
-        );
-        print("Set success state: ${DateTime.now()}");
-      } else {
-        print("Skipped success state update: Notifier disposed");
-      }
-    } catch (e) {
-      print("updateSettingDatabase error: $e - ${DateTime.now()}");
-      if (!_isDisposed) {
-        state = state.copyWith(
-          state: UserSettingConcreteState.error,
-          message: "Error while updating settings to database: $e",
-        );
-      }
-      rethrow;
-    }
+    print("updateUserSetting completed: ${DateTime.now()}");
+    print(mounted);
+    await subscriptionService.updateAllCurrentSubscriptionSetting(
+      state.userSetting,
+    );
+
+    /// This function has to be after any functions because it changes
+    /// currentUserProvider state which will dispose this provider
+    /// which will prevent any further functions to get executed or throw error.
+    await currentUserNotifier.updateUserSetting(state.userSetting);
   }
 }
 
@@ -185,5 +147,5 @@ final userSettingScreenProvider =
       return UserSettingsNotifier(
         subscriptionService: subscriptionService,
         ref: ref,
-      );
+      )..fetchCurrentUserSetting();
     });

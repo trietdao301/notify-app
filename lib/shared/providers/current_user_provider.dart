@@ -53,7 +53,7 @@ class CurrentUserProviderNotifier
     required this.fcm,
   }) : super(CurrentUserProviderState());
 
-  Future<void> fetchCurrentUser() async {
+  Future<void> fetchCurrentUserOnFirstBuild() async {
     state = state.copyWith(
       state: CurrentUserProviderConcreteState.loading,
       message: "Fetching current user",
@@ -137,5 +137,5 @@ final currentUserProvider = StateNotifierProvider<
     auth: auth,
     db: db,
     userService: userService,
-  )..fetchCurrentUser();
+  )..fetchCurrentUserOnFirstBuild();
 });

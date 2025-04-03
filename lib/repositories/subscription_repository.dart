@@ -95,6 +95,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     String userId,
     UserSetting userSetting,
   ) async {
+    print("Co Update Nhe");
     final querySnapshot =
         await db
             .collection("subscriptions")
@@ -104,6 +105,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     final batch = db.batch();
 
     for (var doc in querySnapshot.docs) {
+      print(doc.data());
       batch.update(db.collection('subscriptions').doc(doc.id), {
         'userSetting': userSetting.toFirestore(),
       });

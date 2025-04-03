@@ -109,10 +109,12 @@ class SubscriptionServiceImp implements SubscriptionService {
   Future<void> updateAllCurrentSubscriptionSetting(
     UserSetting userSetting,
   ) async {
+    print("YES OK");
+
     final currentUser = auth.currentUser;
     if (currentUser != null) {
       final userId = currentUser.uid;
-      print(userSetting.toString());
+      print("User settting: ${userSetting.toString()}");
       await subscriptionRepository.updateAllCurrentSubscriptionSetting(
         userId,
         userSetting,
