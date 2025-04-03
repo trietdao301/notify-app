@@ -32,9 +32,9 @@ enum FieldToSubscribe {
 
   const FieldToSubscribe(this.name);
 
-  factory FieldToSubscribe.fromString(String input_field) {
+  factory FieldToSubscribe.fromString(String inputField) {
     for (FieldToSubscribe field in FieldToSubscribe.values) {
-      if (field.name == input_field) {
+      if (field.name == inputField) {
         return field;
       }
     }

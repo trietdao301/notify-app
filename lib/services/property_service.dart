@@ -37,7 +37,9 @@ class PropertyServiceImpl implements PropertyService {
         .getSubscriptionsByUser(currentUser.uid);
     final subscribedPropertyIds =
         subscriptions
-            .where((sub) => sub.userId == currentUser.uid && sub.isSubscribed)
+            .where(
+              (sub) => sub.userId == currentUser.uid && sub.subscriptionStatus,
+            )
             .map((sub) => sub.propertyId)
             .toList();
     return subscribedPropertyIds;

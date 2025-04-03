@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:notifyapp/repositories/property_repository.dart';
 import 'package:notifyapp/models/property.dart';
 
 abstract class PropertyRepository {
@@ -17,8 +15,13 @@ class PropertyRepositoryImpl implements PropertyRepository {
   @override
   Future<List<Property>> fetchProperties({int skip = 0}) async {
     final querySnapshot = await db.collection('properties').get();
-    return querySnapshot.docs
-        .map((doc) => Property.fromFirestore(doc.data(), doc.id))
-        .toList();
+    try {
+      return querySnapshot.docs
+          .map((doc) => Property.fromFirestore(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      print("Error in fetchProperties");
+      throw Exception(e);
+    }
   }
 }

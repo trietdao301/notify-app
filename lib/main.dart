@@ -1,13 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:notifyapp/fcm/init.dart';
+import 'package:notifyapp/models/enums/day.dart';
+import 'package:notifyapp/models/enums/allow_notification_setting.dart';
 import 'package:notifyapp/models/user.dart';
+import 'package:notifyapp/models/user_setting.dart';
 import 'package:notifyapp/repositories/cache_subscription_repository.dart';
 import 'package:notifyapp/router/router.dart';
-import 'package:notifyapp/fcm_service/firebase_messaging_service.dart';
+
 import 'package:notifyapp/services/cache_subscription_service.dart';
 import 'firebase_options.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,22 +24,12 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
     print("Firebase initialized successfully");
     final db = await initializeDb();
     await createAndSignInFirebaseAuth();
-    final CacheSubscriptionRepository cacheSubscriptionRepository =
-        CacheSubscriptionRepositoryImpl(db: db);
-    final CacheSubscriptionService cacheSubscriptionService =
-        CacheSubscriptionServiceImp(
-          cacheSubscriptionRepository: cacheSubscriptionRepository,
-        );
-
-    final messagingService = FirebaseMessagingService(
-      auth: FirebaseAuth.instance,
-      cacheSubscriptionService: cacheSubscriptionService,
-    );
-
-    await messagingService.initialize();
+    final FirebaseMessagingService fcm = FirebaseMessagingService();
+    await fcm.initialize();
   } catch (error) {
     print("Firebase initialization failed: $error");
   }
@@ -65,6 +60,8 @@ class MyApp extends StatelessWidget {
 // Will be used for singup and signin in the future
 Future<void> createAndSignInFirebaseAuth() async {
   UserCredential? credential;
+  final String? fcmToken = await FirebaseMessaging.instance.getToken();
+  if (fcmToken == null) return;
   try {
     credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: "triet.dao@wsu.edu",
@@ -96,29 +93,32 @@ Future<void> createAndSignInFirebaseAuth() async {
   }
 
   // Step 3: Add or update the user in Firestore
-  if (credential != null && credential.user != null) {
-    final uid = credential.user!.uid;
-    final user = UserModel.User(
-      isVerified: true,
-      ownedProperty: [], // No properties owned yet
-      role: Role.admin,
-    );
+  // if (credential != null && credential.user != null) {
+  //   final uid = credential.user!.uid;
+  //   final userSetting = UserSetting();
+  //   final user = UserModel.User(
+  //     isVerified: true,
+  //     role: Role.admin,
+  //     userSetting: userSetting,
+  //     documentId: uid,
+  //     fcmToken: {fcmToken},
+  //   );
 
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .set(
-            user.toFirestore(),
-            SetOptions(merge: true), // Merge to avoid overwriting existing data
-          );
-      print('User $uid added to Firestore successfully');
-    } catch (e) {
-      print('Error adding user to Firestore: $e');
-    }
-  } else {
-    print('No valid user credential available to add to Firestore');
-  }
+  //   try {
+  //     await FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(uid)
+  //         .set(
+  //           user.toFirestore(),
+  //           SetOptions(merge: true), // Merge to avoid overwriting existing data
+  //         );
+  //     print('User $uid added to Firestore successfully');
+  //   } catch (e) {
+  //     print('Error adding user to Firestore: $e');
+  //   }
+  // } else {
+  //   print('No valid user credential available to add to Firestore');
+  // }
 }
 
 Future<FirebaseFirestore> initializeDb() async {

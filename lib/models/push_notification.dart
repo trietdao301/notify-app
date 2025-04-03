@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:notifyapp/models/change.dart';
-import 'package:notifyapp/models/enums/field_can_change.dart';
+import 'package:notifyapp/models/enums/field_to_subscribe.dart';
 
 class PushNotification {
   final String propertyId;
@@ -28,7 +28,7 @@ class PushNotification {
         );
       }
     });
-    return body.join('\n');
+    return body.join(' • ');
   }
 
   factory PushNotification.fromMapString(Map<String, String> input) {

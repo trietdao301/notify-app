@@ -1,10 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:notifyapp/repositories/property_notification_repository.dart';
-import 'package:notifyapp/repositories/property_repository.dart';
-import 'package:notifyapp/models/property.dart';
 import 'package:notifyapp/models/property_notification.dart';
-import 'package:notifyapp/models/subscription.dart';
-import 'package:notifyapp/services/subscription_service.dart';
 
 abstract class PropertyNotificationService {
   Future<List<PropertyNotification>> getNotificationsByUser({

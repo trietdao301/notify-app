@@ -1,9 +1,7 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:notifyapp/features/notification_list/screens/notification_list.dart';
-import 'package:notifyapp/features/property_list/screens/property_list_screen.dart';
+import 'package:notifyapp/shared/providers/current_user_provider.dart';
 import 'package:notifyapp/shared/providers/notification_stream_provider.dart';
 
 class WebScreenWrapper extends ConsumerStatefulWidget {
@@ -18,7 +16,7 @@ class WebScreenWrapper extends ConsumerStatefulWidget {
 class _WebNavigationBarState extends ConsumerState<WebScreenWrapper> {
   int currentIndex = 0;
   // Map navigation bar indices to GoRouter paths
-  static const List<String> _routes = [
+  static const List<String> tabRoutes = [
     '/property_list',
     '/notification_list',
     '/property_list',
@@ -28,7 +26,7 @@ class _WebNavigationBarState extends ConsumerState<WebScreenWrapper> {
     // Get the current notification count from the provider
     final notificationCount = ref.watch(unreadNotificationCountProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
+    final currentUserState = ref.watch(currentUserProvider);
     return Scaffold(
       appBar: AppBar(
         scrolledUnderElevation: 0,
@@ -82,7 +80,7 @@ class _WebNavigationBarState extends ConsumerState<WebScreenWrapper> {
                         setState(() {
                           currentIndex = 0;
                         });
-                        context.go(_routes[0]);
+                        context.go(tabRoutes[0]);
                       },
                     ),
                     _NavItem(
@@ -92,7 +90,7 @@ class _WebNavigationBarState extends ConsumerState<WebScreenWrapper> {
                         setState(() {
                           currentIndex = 1;
                         });
-                        context.go(_routes[1]);
+                        context.go(tabRoutes[1]);
                       },
                     ),
                     _NavItem(
@@ -102,7 +100,7 @@ class _WebNavigationBarState extends ConsumerState<WebScreenWrapper> {
                         setState(() {
                           currentIndex = 2;
                         });
-                        context.go(_routes[2]);
+                        context.go(tabRoutes[2]);
                       },
                     ),
                   ],
@@ -146,8 +144,20 @@ class _WebNavigationBarState extends ConsumerState<WebScreenWrapper> {
                       setState(() {
                         currentIndex = 1;
                       });
-                      context.go(_routes[1]);
+                      context.go(tabRoutes[1]);
                     },
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      print("Settings button pressed: ${DateTime.now()}");
+                      setState(() {
+                        currentIndex = -1;
+                      });
+                      print("Navigation started: ${DateTime.now()}");
+                      context.go('/user_setting');
+                      print("Navigation requested: ${DateTime.now()}");
+                    },
+                    icon: Icon(Icons.settings),
                   ),
                   Container(
                     width: 40,

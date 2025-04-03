@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:notifyapp/models/enums/field_can_change.dart';
+import 'package:notifyapp/models/enums/field_to_subscribe.dart';
+import 'package:notifyapp/models/user_setting.dart';
+import 'package:notifyapp/repositories/cache_subscription_repository.dart';
+import 'package:notifyapp/services/cache_subscription_service.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:notifyapp/repositories/property_repository.dart';
 import 'package:notifyapp/repositories/subscription_repository.dart';
-import 'package:notifyapp/services/fcm_subscription_service.dart';
 import 'package:notifyapp/features/property_list/providers/propert_list_state.dart';
 import 'package:notifyapp/global.dart';
 import 'package:notifyapp/models/property.dart';
@@ -17,10 +19,11 @@ class PropertyListScreenNotifier
     extends StateNotifier<PropertyListScreenState> {
   final PropertyService propertyService;
   final SubscriptionService subscriptionService;
-
+  final CacheSubscriptionService cacheSubscriptionService;
   PropertyListScreenNotifier({
     required this.propertyService,
     required this.subscriptionService,
+    required this.cacheSubscriptionService,
   }) : super(PropertyListScreenState());
 
   Future<void> fetchProperties() async {
@@ -57,26 +60,44 @@ class PropertyListScreenNotifier
 
   Future<void> subscribeToProperty(
     String propertyId,
-    NotificationChannel channelToAdd,
-    Set<FieldToSubscribe> alertsToAdd,
+    Set<NotificationChannel> channels,
+    Set<FieldToSubscribe> fields,
+    UserSetting userSetting,
   ) async {
-    return subscriptionService.subscribeToProperty(
-      propertyId,
-      channelToAdd,
-      alertsToAdd,
-    );
+    try {
+      await subscriptionService.subscribeToProperty(
+        propertyId,
+        channels,
+        fields,
+        userSetting,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        state: PropertyListScreenConcreteState.error,
+        message: 'Error message: ${e.toString()}',
+      );
+    }
   }
 
   Future<void> unSubscribeToProperty(
     String propertyId,
-    NotificationChannel channelToRemove,
-    FieldToSubscribe? alertToRemove,
+    Set<NotificationChannel> channels,
+    Set<FieldToSubscribe> fields,
+    UserSetting userSetting,
   ) async {
-    return subscriptionService.unSubscribeToProperty(
-      propertyId,
-      channelToRemove,
-      alertToRemove != null ? {alertToRemove} : {},
-    );
+    try {
+      return await subscriptionService.unSubscribeToProperty(
+        propertyId,
+        channels,
+        fields,
+        userSetting,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        state: PropertyListScreenConcreteState.error,
+        message: 'Error message: ${e.toString()}',
+      );
+    }
   }
 
   Future<List<String>> getSubscribedPropertyIds(int skip) async {
@@ -85,6 +106,13 @@ class PropertyListScreenNotifier
     );
     return result;
   }
+
+  Future<Subscription?> getCurrentCachedSubscription(String propertyId) async {
+    Subscription? subscription = await cacheSubscriptionService
+        .getCacheSubscriptionByPropertyId(propertyId);
+
+    return subscription;
+  }
 }
 
 final propertyListScreenProvider =
@@ -92,7 +120,6 @@ final propertyListScreenProvider =
       ref,
     ) {
       final fcm = FirebaseMessaging.instance;
-      final fcmSubscribeService = FcmSubscribeServiceImpl(messaging: fcm);
       final firestore = FirebaseFirestore.instance; // Shared Firestore instance
       final auth = FirebaseAuth.instance;
       final PropertyRepository propertyRepository = PropertyRepositoryImpl(
@@ -101,10 +128,19 @@ final propertyListScreenProvider =
       final SubscriptionRepository subscriptionRepository =
           SubscriptionRepositoryImpl(db: firestore);
 
+      final CacheSubscriptionRepository cacheSubscriptionRepository =
+          CacheSubscriptionRepositoryImpl(db: firestore);
+      final CacheSubscriptionService cacheSubscriptionService =
+          CacheSubscriptionServiceImp(
+            cacheSubscriptionRepository: cacheSubscriptionRepository,
+            auth: auth,
+          );
+
       final SubscriptionService subscriptionService = SubscriptionServiceImp(
         auth: auth,
         subscriptionRepository: subscriptionRepository,
-        fcmSubscribeService: fcmSubscribeService,
+
+        fcm: FirebaseMessaging.instance,
       );
       final PropertyService propertyService = PropertyServiceImpl(
         propertyRepository: propertyRepository,
@@ -115,5 +151,6 @@ final propertyListScreenProvider =
       return PropertyListScreenNotifier(
         propertyService: propertyService,
         subscriptionService: subscriptionService,
+        cacheSubscriptionService: cacheSubscriptionService,
       )..fetchProperties();
     });

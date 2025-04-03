@@ -15,7 +15,7 @@ class PropertyInfo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Parcel ID: ${widget.property.parcelId}',
+              'Property ID: ${widget.property.documentId}',
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 4),

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:line_icons/line_icon.dart';
 import 'package:notifyapp/features/property_list/providers/property_list_provider.dart';
 import 'package:notifyapp/features/property_list/widgets/preference_subscription_bottom_sheet.dart';
-import 'package:notifyapp/models/enums/field_can_change.dart';
+import 'package:notifyapp/models/enums/field_to_subscribe.dart';
 import 'package:notifyapp/models/subscription.dart';
 import 'package:notifyapp/models/property.dart';
 import 'package:notifyapp/features/property_list/widgets/property_info.dart';
+import 'package:notifyapp/models/user.dart' as UserModel;
+import 'package:notifyapp/shared/providers/current_user_provider.dart';
 import 'package:toastification/toastification.dart';
 
 class PropertyCard extends ConsumerStatefulWidget {
@@ -24,7 +25,7 @@ class PropertyCard extends ConsumerStatefulWidget {
 }
 
 class _PropertyCardState extends ConsumerState<PropertyCard> {
-  late bool _isSubscribed;
+  bool _isSubscribed = false;
   bool _isLoading = true;
 
   @override
@@ -41,7 +42,7 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
       if (mounted) {
         setState(() {
           _isSubscribed = subscribedPropertyIds.contains(
-            widget.property.parcelId.toString(),
+            widget.property.documentId.toString(),
           );
           _isLoading = false;
         });
@@ -126,7 +127,8 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
                           onPressed:
                               () => PreferenceSubscriptionBottomSheet.show(
                                 context,
-                                widget.property.parcelId.toString(),
+                                widget.property.documentId,
+                                onUnsubscribe: _onUnsubscribe,
                               ),
                           icon: Icon(Icons.expand_more),
                         )
@@ -141,6 +143,24 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
     );
   }
 
+  void _onUnsubscribe() {
+    setState(() {
+      _isSubscribed = false;
+    });
+    toastification.show(
+      context: context,
+      type: ToastificationType.info,
+      style: ToastificationStyle.flat,
+      title: Text('Unsubscribed from ${widget.property.documentId}'),
+      alignment: Alignment.topRight,
+      autoCloseDuration: const Duration(seconds: 4),
+      backgroundColor: Color(0xFFFFFFFF),
+      foregroundColor: Colors.grey[900],
+      borderRadius: BorderRadius.circular(4.0),
+      applyBlurEffect: true,
+    );
+  }
+
   void _onSubscriptionChanged(bool newValue) {
     setState(() {
       _isSubscribed = newValue;
@@ -150,7 +170,8 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
       setState(() {
         _isSubscribed = !newValue;
       });
-      print('Error in subscription change: $e');
+      print('Error in updateSubscription in propertyCard: $e');
+
       toastification.show(
         context: context,
         type: ToastificationType.error,
@@ -167,21 +188,25 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
     });
   }
 
-  Future<void> _updateSubscription(bool newValue) async {
+  Future<void> _updateSubscription(bool isSubscribing) async {
     final notifier = ref.read(propertyListScreenProvider.notifier);
-
-    if (newValue) {
+    final currentUserState = ref.read(currentUserProvider);
+    if (currentUserState.currentUser == null) {
+      return;
+    }
+    if (isSubscribing) {
       await notifier.subscribeToProperty(
-        widget.property.parcelId,
-        NotificationChannel.app,
+        widget.property.documentId,
+        {NotificationChannel.app},
         {FieldToSubscribe.all},
+        currentUserState.currentUser!.userSetting,
       );
 
       toastification.show(
         context: context,
         type: ToastificationType.success,
         style: ToastificationStyle.flat,
-        title: Text('Subscribed to ${widget.property.parcelId}'),
+        title: Text('Subscribed to ${widget.property.documentId}'),
         alignment: Alignment.topRight,
         autoCloseDuration: const Duration(seconds: 4),
         backgroundColor: Color(0xFFFFFFFF), // White background
@@ -195,16 +220,17 @@ class _PropertyCardState extends ConsumerState<PropertyCard> {
       );
     } else {
       await notifier.unSubscribeToProperty(
-        widget.property.parcelId,
-        NotificationChannel.app,
-        null,
+        widget.property.documentId,
+        {NotificationChannel.app},
+        {FieldToSubscribe.all},
+        currentUserState.currentUser!.userSetting,
       );
 
       toastification.show(
         context: context,
         type: ToastificationType.info,
         style: ToastificationStyle.flat,
-        title: Text('Unsubscribed from ${widget.property.parcelId}'),
+        title: Text('Unsubscribed from ${widget.property.documentId}'),
         alignment: Alignment.topRight,
         autoCloseDuration: const Duration(seconds: 4),
         backgroundColor: Color(0xFFFFFFFF), // White background

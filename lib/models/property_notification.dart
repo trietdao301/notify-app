@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:notifyapp/models/change.dart';
-import 'package:notifyapp/models/enums/field_can_change.dart';
+import 'package:notifyapp/models/enums/field_to_subscribe.dart';
 
 class PropertyNotification {
   final String id;

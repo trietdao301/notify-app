@@ -25,7 +25,7 @@ class Property {
   final int returnCode;
   final int numberOfAttempts;
   final DateTime insertTimestamp; // Converted to DateTime
-  final bool editFlag; // 0 or 1 as boolean
+  final bool editFlag;
   final int version;
   final int attempts;
 
@@ -70,34 +70,40 @@ class Property {
     }
   }
 
-  // From Firestore map
   factory Property.fromFirestore(Map<String, dynamic> data, String id) {
     return Property(
-      recordingDate: data['recording_date'] as String?,
-      lastNameOrCorpName: data['last_name_or_corp_name'] ?? '',
-      firstName: data['first_name'] as String?,
-      middleName: data['middle_name'] as String?,
-      generation: data['generation'] as String?,
-      role: data['role'] as String?,
-      partyType: data['party_type'] ?? 'I', // Default to Individual
-      grantorOrGrantee: data['grantor_or_grantee'] ?? 'E', // Default to Grantee
+      recordingDate:
+          data['recordingDate'] != null
+              ? data['recordingDate'].toString()
+              : null,
+      lastNameOrCorpName: data['lastNameOrCorpName'] ?? '',
+      firstName:
+          data['firstName'] != null ? data['firstName'].toString() : null,
+      middleName:
+          data['middleName'] != null ? data['middleName'].toString() : null,
+      generation:
+          data['generation'] != null ? data['generation'].toString() : null,
+      role: data['role'] != null ? data['role'].toString() : null,
+      partyType: data['partyType'] ?? 'I',
+      grantorOrGrantee: data['grantorOrGrantee'] ?? 'E',
       book: data['book']?.toString() ?? '0',
       page: data['page']?.toString() ?? '0',
-      itemNumber: data['item_number'] as int? ?? 0,
-      instrumentTypeCode: data['instrument_type_code'] as int? ?? 0,
-      instrumentTypeName: data['instrument_type_name'] ?? '',
-      parcelId: data['parcel_id'] ?? id, // Use doc ID if parcel_id missing
-      referenceBook: data['reference_book']?.toString() ?? '0',
-      referencePage: data['reference_page']?.toString() ?? '0',
-      remark1: data['remark_1'] as String?,
-      remark2: data['remark_2'] as String?,
-      instrumentId: data['instrument_id'] as String?,
-      returnCode: data['return_code'] as int? ?? 0,
-      numberOfAttempts: data['number_of_attempts'] as int? ?? 0,
+      itemNumber: data['itemNumber'] as int? ?? 0,
+      instrumentTypeCode: data['instrumentTypeCode'] as int? ?? 0,
+      instrumentTypeName: data['instrumentTypeName'] ?? '',
+      parcelId: data['parcelId'] ?? id,
+      referenceBook: data['referenceBook']?.toString() ?? '0',
+      referencePage: data['referencePage']?.toString() ?? '0',
+      remark1: data['remark1'] != null ? data['remark1'].toString() : null,
+      remark2: data['remark2'] != null ? data['remark2'].toString() : null,
+      instrumentId:
+          data['instrumentId'] != null ? data['instrumentId'].toString() : null,
+      returnCode: data['returnCode'] as int? ?? 0,
+      numberOfAttempts: data['numberOfAttempts'] as int? ?? 0,
       insertTimestamp:
-          (data['insert_timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      editFlag: (data['edit_flag'] as int? ?? 0) == 1,
-      documentId: data['document_id']?.toString() ?? id,
+          (data['insertTimestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      editFlag: (data['editFlag'] as bool? ?? false),
+      documentId: data['documentId']?.toString() ?? id,
       version: data['version'] as int? ?? 1,
       attempts: data['attempts'] as int? ?? 0,
     );

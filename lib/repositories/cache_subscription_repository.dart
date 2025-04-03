@@ -4,6 +4,10 @@ import 'package:notifyapp/models/subscription.dart';
 abstract class CacheSubscriptionRepository {
   Future<List<Subscription>> getSubscriptionsByUser(String userId);
   Future<List<Subscription>> getActiveSubscriptionsByUser(String userId);
+  Future<Subscription?> getCacheSubscriptionByPropertyId(
+    String propertyId,
+    String userId,
+  );
 }
 
 class CacheSubscriptionRepositoryImpl implements CacheSubscriptionRepository {
@@ -57,6 +61,33 @@ class CacheSubscriptionRepositoryImpl implements CacheSubscriptionRepository {
     } catch (e) {
       print("Error fetching active subscriptions from cache: $e");
       return [];
+    }
+  }
+
+  @override
+  Future<Subscription?> getCacheSubscriptionByPropertyId(
+    String propertyId,
+    String userId,
+  ) async {
+    try {
+      final result = await db
+          .collection("subscriptions")
+          .where("userId", isEqualTo: userId)
+          .where("propertyId", isEqualTo: propertyId)
+          .get(const GetOptions(source: Source.cache));
+
+      if (result.docs.isEmpty) {
+        return null;
+      }
+
+      final doc = result.docs.first;
+      return Subscription.fromFirestore(
+        // ignore: unnecessary_cast
+        doc.data() as Map<String, dynamic>,
+        doc.id,
+      );
+    } catch (e) {
+      throw Exception("Failed to fetch subscription from cache: $e");
     }
   }
 }

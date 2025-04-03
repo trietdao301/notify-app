@@ -6,11 +6,11 @@ import 'package:notifyapp/features/notification_list/widgets/notification_card.d
 import 'package:notifyapp/shared/providers/notification_stream_provider.dart';
 
 class NotificationListScreen extends ConsumerStatefulWidget {
-  const NotificationListScreen();
+  const NotificationListScreen({super.key}); // Added super.key for consistency
+
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() {
-    return _NotificationListState();
-  }
+  ConsumerState<NotificationListScreen> createState() =>
+      _NotificationListState();
 }
 
 class _NotificationListState extends ConsumerState<NotificationListScreen> {
@@ -18,25 +18,32 @@ class _NotificationListState extends ConsumerState<NotificationListScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(notificationListNotifierProvider);
 
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: [
-            Text(
-              "Notification",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            Expanded(
-              child: switch (state.state) {
-                (NotificationListScreenConcreteState.fetchedAllNotifications ||
-                    NotificationListScreenConcreteState.fetchingMore) =>
-                  ListView.builder(
-                    itemCount: state.notificationList.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: NotificationCard(
+    return Material(
+      color:
+          Theme.of(
+            context,
+          ).scaffoldBackgroundColor, // Match WebScreenWrapper’s Scaffold
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "Notification",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Expanded(
+                child: switch (state.state) {
+                  (NotificationListScreenConcreteState
+                          .fetchedAllNotifications ||
+                      NotificationListScreenConcreteState.fetchingMore) =>
+                    ListView.separated(
+                      itemCount: state.notificationList.length,
+                      separatorBuilder:
+                          (context, index) => const SizedBox(height: 8.0),
+                      itemBuilder: (context, index) {
+                        return NotificationCard(
                           title:
                               "Property ${state.notificationList[index].propertyId} Changed",
                           createAt:
@@ -48,22 +55,22 @@ class _NotificationListState extends ConsumerState<NotificationListScreen> {
                                 notificationId:
                                     state.notificationList[index].id,
                               ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
+                  NotificationListScreenConcreteState.error => Center(
+                    child: Text('Error: ${state.message}'),
                   ),
-                NotificationListScreenConcreteState.error => Text(
-                  'Error: ${state.message}',
-                ),
-                NotificationListScreenConcreteState.loading => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                NotificationListScreenConcreteState.initial => Text(
-                  'Initial state',
-                ),
-              },
-            ),
-          ],
+                  NotificationListScreenConcreteState.loading => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  NotificationListScreenConcreteState.initial => Center(
+                    child: Text('Initial state'),
+                  ),
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

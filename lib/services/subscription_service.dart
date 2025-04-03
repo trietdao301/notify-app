@@ -1,32 +1,40 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:notifyapp/models/user_setting.dart';
+import 'package:notifyapp/repositories/cache_subscription_repository.dart';
 import 'package:notifyapp/repositories/subscription_repository.dart';
-import 'package:notifyapp/services/fcm_subscription_service.dart';
-import 'package:notifyapp/models/enums/field_can_change.dart';
+import 'package:notifyapp/services/cache_subscription_service.dart';
+import 'package:notifyapp/models/enums/field_to_subscribe.dart';
 import 'package:notifyapp/models/subscription.dart';
 
 abstract class SubscriptionService {
   Future<List<Subscription>> getSubscriptionsByUser(String userId);
   Future<void> subscribeToProperty(
     String propertyId,
-    NotificationChannel channelToAdd,
-    Set<FieldToSubscribe> alertsToAdd,
+    Set<NotificationChannel> channels,
+    Set<FieldToSubscribe> fields,
+    UserSetting userSetting,
   );
   Future<void> unSubscribeToProperty(
     String propertyId,
-    NotificationChannel channelToRemove,
-    Set<FieldToSubscribe> alertToRemove,
+    Set<NotificationChannel> channels,
+    Set<FieldToSubscribe> fields,
+    UserSetting userSetting,
   );
+
+  Future<void> updateAllCurrentSubscriptionSetting(UserSetting userSetting);
 }
 
 class SubscriptionServiceImp implements SubscriptionService {
   final FirebaseAuth auth;
   final SubscriptionRepository subscriptionRepository;
-  final FcmSubscribeService fcmSubscribeService;
 
+  final FirebaseMessaging fcm;
   SubscriptionServiceImp({
     required this.auth,
     required this.subscriptionRepository,
-    required this.fcmSubscribeService,
+
+    required this.fcm,
   });
 
   @override
@@ -39,58 +47,77 @@ class SubscriptionServiceImp implements SubscriptionService {
   @override
   Future<void> subscribeToProperty(
     String propertyId,
-    NotificationChannel channelToAdd,
-    Set<FieldToSubscribe> preferenceToAdd,
+    Set<NotificationChannel> channels,
+    Set<FieldToSubscribe> fields,
+    UserSetting userSetting,
   ) async {
     final currentUser = auth.currentUser;
-    if (currentUser != null) {
-      final userId = currentUser.uid;
-      final documentId = '${userId}_$propertyId';
-      try {
-        await fcmSubscribeService.subscribeToPropertyTopic(propertyId);
-        print('Subscribed to property ID: $documentId');
-        await subscriptionRepository.saveSubscription(
-          documentId,
-          userId,
-          propertyId,
-          channelToAdd,
-          preferenceToAdd,
-          true,
-        );
-      } catch (e) {
-        throw Exception("Fail to update subscription or fail to unsubscribe");
-      }
-    } else {
-      throw Exception("Current user is null");
+    if (currentUser == null) {
+      throw Exception("Current user is null when subscribing");
     }
+    final userId = currentUser.uid;
+    final subscriptionId = '${userId}_$propertyId';
+    final String? fcmToken = await fcm.getToken();
+    if (fcmToken == null) {
+      throw Exception(
+        "No fcm Token is found for this user when subscribeToProperty",
+      );
+    }
+    subscriptionRepository.saveSubscription(
+      subscriptionId,
+      userId,
+      propertyId,
+      channels,
+      fields,
+      userSetting,
+      true,
+      fcmToken,
+    );
   }
 
   @override
   Future<void> unSubscribeToProperty(
     String propertyId,
-    NotificationChannel channelToRemove,
-    Set<FieldToSubscribe> preferenceToRemove,
+    Set<NotificationChannel> channels,
+    Set<FieldToSubscribe> fields,
+    UserSetting userSetting,
   ) async {
     final currentUser = auth.currentUser;
     if (currentUser != null) {
       final userId = currentUser.uid;
-      final documentId = '${userId}_$propertyId';
-      try {
-        await subscriptionRepository.saveSubscription(
-          documentId,
-          userId,
-          propertyId,
-          channelToRemove,
-          preferenceToRemove,
-          false,
+      final subscriptionId = '${userId}_$propertyId';
+      final String? fcmToken = await fcm.getToken();
+      if (fcmToken == null) {
+        throw Exception(
+          "No fcm Token is found for this user when subscribeToProperty",
         );
-        await fcmSubscribeService.unsubscribeFromPropertyTopic(propertyId);
-        print('Unsubscribed to property ID: $documentId');
-      } catch (e) {
-        throw Exception(e);
       }
-    } else {
-      throw Exception("Current user is null");
+      subscriptionRepository.saveSubscription(
+        subscriptionId,
+        userId,
+        propertyId,
+        channels,
+        fields,
+        userSetting,
+        false,
+        fcmToken,
+      );
+    }
+  }
+
+  @override
+  Future<void> updateAllCurrentSubscriptionSetting(
+    UserSetting userSetting,
+  ) async {
+    final currentUser = auth.currentUser;
+    if (currentUser != null) {
+      final userId = currentUser.uid;
+      print(userSetting.toString());
+      await subscriptionRepository.updateAllCurrentSubscriptionSetting(
+        userId,
+        userSetting,
+      );
+      return;
     }
   }
 }

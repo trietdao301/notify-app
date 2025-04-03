@@ -1,26 +1,42 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:notifyapp/models/enums/day.dart';
+import 'package:notifyapp/models/enums/allow_notification_setting.dart';
+import 'package:notifyapp/models/user_setting.dart';
 
 enum Role { admin, user, anonymous }
 
 class User {
-  final bool isVerified; // For ownership verification
-  final List<String> ownedProperty; // List of houseIds for owned properties
-  final Role role; // User role (e.g., 'admin', 'user', 'anonymous')
-
+  final bool isVerified;
+  final UserSetting userSetting;
+  final Role role;
+  final String documentId;
+  final Set<String> fcmToken;
   User({
     required this.isVerified,
-    required this.ownedProperty,
+    required this.userSetting,
     required this.role,
+    required this.documentId,
+    required this.fcmToken,
   });
 
   // From Firestore
   factory User.fromFirestore(Map<String, dynamic> data, String documentId) {
     return User(
-      isVerified: data['isVerified'] ?? false,
-      ownedProperty: List<String>.from(data['ownedProperty'] ?? []),
+      documentId: documentId,
+      isVerified: data['isVerified'] as bool? ?? false,
+      fcmToken:
+          (data['fcmToken'] as List<dynamic>? ?? [])
+              .map((e) => e.toString())
+              .toSet(),
+      userSetting:
+          data['userSetting'] != null
+              ? UserSetting.fromJson(
+                data['userSetting'] as Map<String, dynamic>,
+              )
+              : UserSetting(), // Provide a default if null
       role: Role.values.firstWhere(
-        (r) => r.toString() == 'Role.${data['role']}',
-        orElse: () => Role.anonymous, // Default to 'anonymous'
+        (r) => r.name == data['role'],
+        orElse: () => Role.anonymous,
       ),
     );
   }
@@ -29,8 +45,9 @@ class User {
   Map<String, dynamic> toFirestore() {
     return {
       'isVerified': isVerified,
-      'ownedProperty': ownedProperty,
-      'role': role.toString().split('.').last, // Store enum as string
+      'userSetting': userSetting.toFirestore(),
+      'role': role.name,
+      'fcmToken': fcmToken,
     };
   }
 }

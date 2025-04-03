@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 # Initialize Firebase Admin SDK with your service account key
-cred = credentials.Certificate('notification-app-123456-firebase-adminsdk-fbsvc-caf496290a.json')  # Update this path if needed
+cred = credentials.Certificate('firebase_certificate.json')  # Update this path if needed
 firebase_admin.initialize_app(cred)
 
 # Get a reference to Firestore
@@ -54,12 +54,15 @@ def import_house():
 # Update editFlag and book fields for a property with documentId = '4'
 def update_property():
     try:
+        propertyId = "5"
         # Directly update the document with ID '4'
-        db.collection('properties').document('4').update({
-            'editFlag': True,
-            'book': '450'  # Stored as string to match your sample data
+        db.collection('properties').document(propertyId).update({
+            'attempts': 2,
+            'version': 2,  # Stored as string to match your sample data
+            'firstName': "2",
+            'editFlag': False
         })
-        print("Updated property with ID: '4'")
+        print(f"Updated property with ID: ${propertyId}")
     except Exception as e:
         print(f"Error updating property: {e}")
 
