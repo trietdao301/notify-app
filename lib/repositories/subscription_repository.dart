@@ -12,15 +12,9 @@ abstract class SubscriptionRepository {
     String propertyId,
     Set<NotificationChannel>? channels,
     Set<FieldToSubscribe>? alerts,
-    UserSetting userSetting,
     bool subscriptionStatus,
-    String fcmToken,
   );
   Future<List<Subscription>> getActiveSubscriptionsByUser(String userId);
-  Future<void> updateAllCurrentSubscriptionSetting(
-    String userId,
-    UserSetting userSetting,
-  );
 }
 
 class SubscriptionRepositoryImpl implements SubscriptionRepository {
@@ -48,27 +42,22 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     String propertyId,
     Set<NotificationChannel>? channels,
     Set<FieldToSubscribe>? alerts,
-    UserSetting userSetting,
     bool subscriptionStatus,
-    String fcmToken,
   ) async {
-    final alertNames = alerts!.map((alert) => alert.name).toList();
-    final channelNames =
-        channels?.map((channel) => channel.name).toList() ?? [];
-
+    if (alerts == null) return;
     try {
-      await db.collection('subscriptions').doc(subscriptionId).set({
-        'userId': userId,
-        'propertyId': propertyId,
-        'subscriptionStatus': subscriptionStatus,
-        'notificationChannels': channelNames,
-        'userSetting': userSetting.toFirestore(),
-        if (subscriptionStatus) 'fcmToken': FieldValue.arrayUnion([fcmToken]),
-        'alertPreferences':
-            alerts.contains(FieldToSubscribe.all)
-                ? [FieldToSubscribe.all.name]
-                : alertNames,
-      }, SetOptions(merge: true));
+      Subscription subscriptionToAdd = Subscription(
+        documentId: subscriptionId,
+        userId: userId,
+        propertyId: propertyId,
+        subscriptionStatus: subscriptionStatus,
+        notificationChannels: channels ?? {},
+        subscribedFields: alerts ?? {},
+      );
+      await db
+          .collection('subscriptions')
+          .doc(subscriptionId)
+          .set(subscriptionToAdd.toFirestore(), SetOptions(merge: true));
     } catch (e, stackTrace) {
       print(stackTrace);
       rethrow;
@@ -88,28 +77,5 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
             .map((doc) => Subscription.fromFirestore(doc.data(), doc.id))
             .toList();
     return result;
-  }
-
-  @override
-  Future<void> updateAllCurrentSubscriptionSetting(
-    String userId,
-    UserSetting userSetting,
-  ) async {
-    print("Co Update Nhe");
-    final querySnapshot =
-        await db
-            .collection("subscriptions")
-            .where("userId", isEqualTo: userId)
-            .where("subscriptionStatus", isEqualTo: true)
-            .get();
-    final batch = db.batch();
-
-    for (var doc in querySnapshot.docs) {
-      print(doc.data());
-      batch.update(db.collection('subscriptions').doc(doc.id), {
-        'userSetting': userSetting.toFirestore(),
-      });
-    }
-    await batch.commit();
   }
 }

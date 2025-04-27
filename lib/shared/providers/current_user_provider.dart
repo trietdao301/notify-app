@@ -4,9 +4,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:notifyapp/fcm/platforms/android.dart';
+import 'package:notifyapp/models/milliseconds_since_epoch.dart';
 import 'package:notifyapp/models/user.dart' as UserModel;
 import 'package:notifyapp/models/user_setting.dart';
+import 'package:notifyapp/repositories/subscription_repository.dart';
 import 'package:notifyapp/repositories/user_repository.dart';
+import 'package:notifyapp/services/subscription_service.dart';
 import 'package:notifyapp/services/user_service.dart';
 
 enum CurrentUserProviderConcreteState {
@@ -45,13 +48,20 @@ class CurrentUserProviderNotifier
   final FirebaseFirestore db;
   final UserService userService;
   final FirebaseMessaging fcm;
-
   CurrentUserProviderNotifier({
     required this.auth,
     required this.db,
     required this.userService,
     required this.fcm,
   }) : super(CurrentUserProviderState());
+
+  @override
+  void disposed() {
+    print(
+      "currentUserProvider get disposed (dangerous) since we are fetching subscriptions on first build",
+    );
+    super.dispose();
+  }
 
   Future<void> fetchCurrentUserOnFirstBuild() async {
     state = state.copyWith(
@@ -61,6 +71,7 @@ class CurrentUserProviderNotifier
     print("current user is loading.");
     try {
       final UserModel.User user = await userService.getCurrentUser();
+
       state = state.copyWith(
         user: user,
         state: CurrentUserProviderConcreteState.fetchedCurrentUser,
@@ -101,10 +112,16 @@ class CurrentUserProviderNotifier
         userSetting: userSetting,
         role: currentUser.role,
         documentId: currentUser.documentId,
-        fcmToken: currentUser.fcmToken,
+        fcmTokens: currentUser.fcmTokens,
+        lastReceived: currentUser.lastReceived,
       );
 
-      await userService.updateUser(updatedUser);
+      await userService.updateUser(
+        currentUser.documentId,
+        currentUser.isVerified,
+        userSetting,
+        currentUser.role,
+      );
 
       state = state.copyWith(
         user: updatedUser,
@@ -126,12 +143,14 @@ final currentUserProvider = StateNotifierProvider<
 >((ref) {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore db = FirebaseFirestore.instance;
+  final FirebaseMessaging fcm = FirebaseMessaging.instance;
   final UserRepository userRepository = UserRepositoryImpl(db: db);
   final UserService userService = UserServiceImpl(
     userRepository: userRepository,
     auth: auth,
+    fcm: fcm,
   );
-  final FirebaseMessaging fcm = FirebaseMessaging.instance;
+
   return CurrentUserProviderNotifier(
     fcm: fcm,
     auth: auth,

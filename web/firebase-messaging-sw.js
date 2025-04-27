@@ -16,15 +16,15 @@ const firebaseApp = firebase.initializeApp({
 const messaging = firebase.messaging(firebaseApp);
 
 // // Handle background messages
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[firebase-messaging-sw.js] Received background message:', payload);
+// messaging.onBackgroundMessage(function(payload) {
+//   console.log('[firebase-messaging-sw.js] Received background message:', payload);
   
-  // // Customize notification (optional)
-  // const notificationTitle = payload.notification?.title || 'Property Update';
-  // const notificationOptions = {
-  //   body: payload.notification?.body || 'A property has been updated.',
-  //   icon: '/favicon.png' // Ensure this exists in web/
-  // };
+//   // // Customize notification (optional)
+//   // const notificationTitle = payload.notification?.title || 'Property Update';
+//   // const notificationOptions = {
+//   //   body: payload.notification?.body || 'A property has been updated.',
+//   //   icon: '/favicon.png' // Ensure this exists in web/
+//   // };
 
-  // self.registration.showNotification(notificationTitle, notificationOptions);
-});
+//   // self.registration.showNotification(notificationTitle, notificationOptions);
+// });

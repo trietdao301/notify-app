@@ -21,8 +21,6 @@ abstract class SubscriptionService {
     Set<FieldToSubscribe> fields,
     UserSetting userSetting,
   );
-
-  Future<void> updateAllCurrentSubscriptionSetting(UserSetting userSetting);
 }
 
 class SubscriptionServiceImp implements SubscriptionService {
@@ -69,9 +67,7 @@ class SubscriptionServiceImp implements SubscriptionService {
       propertyId,
       channels,
       fields,
-      userSetting,
       true,
-      fcmToken,
     );
   }
 
@@ -98,28 +94,8 @@ class SubscriptionServiceImp implements SubscriptionService {
         propertyId,
         channels,
         fields,
-        userSetting,
         false,
-        fcmToken,
       );
-    }
-  }
-
-  @override
-  Future<void> updateAllCurrentSubscriptionSetting(
-    UserSetting userSetting,
-  ) async {
-    print("YES OK");
-
-    final currentUser = auth.currentUser;
-    if (currentUser != null) {
-      final userId = currentUser.uid;
-      print("User settting: ${userSetting.toString()}");
-      await subscriptionRepository.updateAllCurrentSubscriptionSetting(
-        userId,
-        userSetting,
-      );
-      return;
     }
   }
 }

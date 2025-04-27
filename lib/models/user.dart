@@ -1,31 +1,40 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:notifyapp/models/enums/day.dart';
-import 'package:notifyapp/models/enums/allow_notification_setting.dart';
+import 'package:notifyapp/models/milliseconds_since_epoch.dart';
 import 'package:notifyapp/models/user_setting.dart';
 
-enum Role { admin, user, anonymous }
+enum Role {
+  admin("admin"),
+  user("user"),
+  anonymous("anonymous");
+
+  final String value;
+  const Role(this.value);
+}
 
 class User {
   final bool isVerified;
   final UserSetting userSetting;
   final Role role;
   final String documentId;
-  final Set<String> fcmToken;
+  final Set<String> fcmTokens;
+  final MillisecondsSinceEpoch? lastReceived;
+
   User({
     required this.isVerified,
     required this.userSetting,
     required this.role,
     required this.documentId,
-    required this.fcmToken,
+    required this.fcmTokens,
+    required this.lastReceived,
   });
 
   // From Firestore
   factory User.fromFirestore(Map<String, dynamic> data, String documentId) {
+    final lastReceivedData = data['lastReceived'];
     return User(
       documentId: documentId,
       isVerified: data['isVerified'] as bool? ?? false,
-      fcmToken:
-          (data['fcmToken'] as List<dynamic>? ?? [])
+      fcmTokens:
+          (data['fcmTokens'] as List<dynamic>? ?? [])
               .map((e) => e.toString())
               .toSet(),
       userSetting:
@@ -38,6 +47,10 @@ class User {
         (r) => r.name == data['role'],
         orElse: () => Role.anonymous,
       ),
+      lastReceived:
+          lastReceivedData != null
+              ? MillisecondsSinceEpoch(milliseconds: lastReceivedData as int)
+              : null, // Set to null if not present
     );
   }
 
@@ -47,7 +60,8 @@ class User {
       'isVerified': isVerified,
       'userSetting': userSetting.toFirestore(),
       'role': role.name,
-      'fcmToken': fcmToken,
+      'fcmTokens': fcmTokens.toList(), // Convert Set to List for Firestore
+      if (lastReceived != null) 'lastReceived': lastReceived!.milliseconds,
     };
   }
 }

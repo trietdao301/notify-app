@@ -1,15 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseMessagingWeb {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  // ignore: unused_field
-  final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
-    // Request permission for web
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
       announcement: false,
@@ -31,7 +26,11 @@ class FirebaseMessagingWeb {
       String? token;
       if (kIsWeb) {
         print("getting token for web");
-        // get the device fcm token
+        String? cachedToken = await _firebaseMessaging.getToken();
+        if (cachedToken != null) {
+          print("cached web token: ${cachedToken}");
+          return;
+        }
         token = await _firebaseMessaging.getToken(
           vapidKey:
               "BOWSk929uln4Dso2LcxTYdo1O6gN3EjJ-MDlIDy2OhNVCyaksHKzgqebAbHePAjd3iEtM-fxCdFX5GLzO0kj998",

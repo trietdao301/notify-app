@@ -1,9 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:notifyapp/models/user.dart';
+import 'package:notifyapp/models/user.dart' as UserModel;
+import 'package:notifyapp/models/user_setting.dart';
 
 abstract class UserRepository {
   Future<User> getUser(String userId);
-  Future<void> updateUser(String userId, Map<String, dynamic> data);
+  Future<void> updateUser(
+    final String documentId,
+    final bool? isVerified,
+    final UserSetting? userSetting,
+    final UserModel.Role? role,
+    final String? fcmToken,
+  );
 }
 
 class UserRepositoryImpl implements UserRepository {
@@ -38,15 +46,33 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> updateUser(String userId, Map<String, dynamic> data) async {
+  Future<void> updateUser(
+    final String documentId,
+    final bool? isVerified,
+    final UserSetting? userSetting,
+    final UserModel.Role? role,
+    final String? fcmToken,
+  ) async {
     try {
+      final Map<String, dynamic> data = {};
+
+      if (isVerified != null) {
+        data['isVerified'] = isVerified;
+      }
+      if (userSetting != null) {
+        data['userSetting'] = userSetting.toFirestore();
+      }
+      if (role != null) {
+        data['role'] = role.value;
+      }
+      if (fcmToken != null) {
+        data['fcmTokens'] = FieldValue.arrayUnion([fcmToken]);
+      }
+
       await db
           .collection('users')
-          .doc(userId)
-          .set(
-            data,
-            SetOptions(merge: true), // Merge with existing data
-          );
+          .doc(documentId)
+          .set(data, SetOptions(merge: true));
     } catch (e, stackTrace) {
       throw Exception('Failed to update user: $e (Stack: $stackTrace)');
     }

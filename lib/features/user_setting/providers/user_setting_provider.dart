@@ -107,24 +107,13 @@ class UserSettingsNotifier extends StateNotifier<UserSettingState> {
   }
 
   Future<void> saveSetting() async {
-    print("updateSettingDatabase started: ${DateTime.now()}");
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
-
-    print("Set loading state: ${DateTime.now()}");
-
     state = state.copyWith(
       state: UserSettingConcreteState.loading,
       message: "Saving settings",
     );
-    print(mounted);
 
-    print("updateUserSetting completed: ${DateTime.now()}");
-    print(mounted);
-    await subscriptionService.updateAllCurrentSubscriptionSetting(
-      state.userSetting,
-    );
-
-    /// This function has to be after any functions because it changes
+    /// This updateUserSetting has to be after any functions because it changes
     /// currentUserProvider state which will dispose this provider
     /// which will prevent any further functions to get executed or throw error.
     await currentUserNotifier.updateUserSetting(state.userSetting);

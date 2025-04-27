@@ -6,17 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notifyapp/fcm/init.dart';
-import 'package:notifyapp/models/enums/day.dart';
-import 'package:notifyapp/models/enums/allow_notification_setting.dart';
 import 'package:notifyapp/models/user.dart';
 import 'package:notifyapp/models/user_setting.dart';
-import 'package:notifyapp/repositories/cache_subscription_repository.dart';
 import 'package:notifyapp/router/router.dart';
-
-import 'package:notifyapp/services/cache_subscription_service.dart';
 import 'firebase_options.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:notifyapp/models/user.dart' as UserModel;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,11 +19,11 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    print("Firebase initialized successfully");
     final db = await initializeDb();
+
     await createAndSignInFirebaseAuth();
-    final FirebaseMessagingService fcm = FirebaseMessagingService();
-    await fcm.initialize();
+    final FirebaseMessagingService fcmService = FirebaseMessagingService();
+    await fcmService.initialize();
   } catch (error) {
     print("Firebase initialization failed: $error");
   }
@@ -92,33 +86,33 @@ Future<void> createAndSignInFirebaseAuth() async {
     print(e.code);
   }
 
-  // Step 3: Add or update the user in Firestore
-  // if (credential != null && credential.user != null) {
-  //   final uid = credential.user!.uid;
-  //   final userSetting = UserSetting();
-  //   final user = UserModel.User(
-  //     isVerified: true,
-  //     role: Role.admin,
-  //     userSetting: userSetting,
-  //     documentId: uid,
-  //     fcmToken: {fcmToken},
-  //   );
+  //Step 3: Add or update the user in Firestore
+  if (credential != null && credential.user != null) {
+    final uid = credential.user!.uid;
+    final userSetting = UserSetting();
+    final Map<String, dynamic> data = {};
 
-  //   try {
-  //     await FirebaseFirestore.instance
-  //         .collection('users')
-  //         .doc(uid)
-  //         .set(
-  //           user.toFirestore(),
-  //           SetOptions(merge: true), // Merge to avoid overwriting existing data
-  //         );
-  //     print('User $uid added to Firestore successfully');
-  //   } catch (e) {
-  //     print('Error adding user to Firestore: $e');
-  //   }
-  // } else {
-  //   print('No valid user credential available to add to Firestore');
-  // }
+    data['isVerified'] = true;
+    data['userSetting'] = userSetting.toFirestore();
+    data['role'] = Role.admin.value;
+    data['fcmTokens'] = FieldValue.arrayUnion([fcmToken]);
+    data['lastReceived'] = 0;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set(
+            data,
+            SetOptions(merge: true), // Merge to avoid overwriting existing data
+          );
+      print('User $uid added to Firestore successfully');
+    } catch (e) {
+      print('Error adding user to Firestore: $e');
+    }
+  } else {
+    print('No valid user credential available to add to Firestore');
+  }
 }
 
 Future<FirebaseFirestore> initializeDb() async {

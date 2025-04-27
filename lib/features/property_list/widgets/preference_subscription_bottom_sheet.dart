@@ -59,8 +59,8 @@ class _PreferenceSubscriptionBottomSheetState
     print(currentSubscription);
     if (mounted) {
       setState(() {
-        chosenFields = currentSubscription!.alertPreferences.toSet();
-        originalChosenField = currentSubscription!.alertPreferences.toSet();
+        chosenFields = currentSubscription!.subscribedFields.toSet();
+        originalChosenField = currentSubscription!.subscribedFields.toSet();
         _isLoading = false;
       });
     }

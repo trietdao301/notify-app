@@ -11,9 +11,7 @@ class Subscription {
   String _propertyId;
   bool _subscriptionStatus;
   Set<NotificationChannel> _notificationChannels;
-  Set<FieldToSubscribe> _alertPreferences;
-  Set<String> _fcmToken;
-  UserSetting _userSetting;
+  Set<FieldToSubscribe> _subscribedFields;
 
   // Constructor with validation
   Subscription({
@@ -22,25 +20,20 @@ class Subscription {
     required String propertyId,
     required bool subscriptionStatus,
     required Set<NotificationChannel> notificationChannels,
-    required Set<FieldToSubscribe> alertPreferences,
-    required Set<String> fcmToken,
-    required UserSetting userSetting,
+    required Set<FieldToSubscribe> subscribedFields,
   }) : _documentId = documentId,
        _userId = userId,
        _propertyId = propertyId,
        _subscriptionStatus = subscriptionStatus,
        _notificationChannels = notificationChannels,
-       _alertPreferences = alertPreferences,
-       _fcmToken = fcmToken,
-       _userSetting = userSetting {
+       _subscribedFields = subscribedFields {
     if (documentId.isEmpty) throw Exception('Document ID cannot be empty');
     if (userId.isEmpty) throw Exception('User ID cannot be empty');
     if (propertyId.isEmpty) throw Exception('Property ID cannot be empty');
-    if (fcmToken.isEmpty) throw Exception('FCM token cannot be empty');
     if (notificationChannels.isEmpty) {
       throw Exception('At least one notification channel must be specified');
     }
-    if (alertPreferences.isEmpty) {
+    if (subscribedFields.isEmpty) {
       throw Exception('At least one alert preference must be specified');
     }
   }
@@ -51,9 +44,7 @@ class Subscription {
   String get propertyId => _propertyId;
   bool get subscriptionStatus => _subscriptionStatus;
   Set<NotificationChannel> get notificationChannels => _notificationChannels;
-  Set<FieldToSubscribe> get alertPreferences => _alertPreferences;
-  Set<String> get fcmToken => _fcmToken;
-  UserSetting get userSetting => _userSetting;
+  Set<FieldToSubscribe> get subscribedFields => _subscribedFields;
 
   // Setters
   set documentId(String value) => _documentId = value;
@@ -63,9 +54,7 @@ class Subscription {
   set notificationChannels(Set<NotificationChannel> value) =>
       _notificationChannels = value;
   set alertPreferences(Set<FieldToSubscribe> value) =>
-      _alertPreferences = value;
-  set fcmToken(Set<String> value) => _fcmToken = value;
-  set userSetting(UserSetting value) => _userSetting = value;
+      _subscribedFields = value;
 
   // Factory from JSON (e.g., for manual deserialization)
   factory Subscription.fromJson(Map<String, dynamic> json) {
@@ -74,7 +63,6 @@ class Subscription {
       userId: json['userId'] as String? ?? '',
       propertyId: json['propertyId'] as String? ?? '',
       subscriptionStatus: json['subscriptionStatus'] as bool? ?? false,
-      fcmToken: json['fcmToken'] as Set<String>? ?? {},
       notificationChannels:
           (json['notificationChannels'] as List<dynamic>? ?? [])
               .map(
@@ -84,8 +72,8 @@ class Subscription {
                 ),
               )
               .toSet(),
-      alertPreferences:
-          (json['alertPreferences'] as List<dynamic>? ?? [])
+      subscribedFields:
+          (json['subscribedFields'] as List<dynamic>? ?? [])
               .map(
                 (e) => FieldToSubscribe.values.firstWhere(
                   (field) => field.name == e as String,
@@ -93,12 +81,6 @@ class Subscription {
                 ),
               )
               .toSet(),
-      userSetting:
-          json['userSetting'] != null
-              ? UserSetting.fromJson(
-                json['userSetting'] as Map<String, dynamic>,
-              )
-              : _defaultUserSetting(),
     );
   }
 
@@ -112,11 +94,7 @@ class Subscription {
       userId: data['userId'] as String? ?? '',
       propertyId: data['propertyId'] as String? ?? '',
       subscriptionStatus: data['subscriptionStatus'] as bool? ?? false,
-      fcmToken:
-          (data['fcmToken'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toSet() ??
-          <String>{},
+
       notificationChannels:
           (data['notificationChannels'] as List<dynamic>? ?? [])
               .map(
@@ -126,8 +104,8 @@ class Subscription {
                 ),
               )
               .toSet(),
-      alertPreferences:
-          (data['alertPreferences'] as List<dynamic>? ?? [])
+      subscribedFields:
+          (data['subscribedFields'] as List<dynamic>? ?? [])
               .map(
                 (e) => FieldToSubscribe.values.firstWhere(
                   (field) => field.name == e as String,
@@ -135,12 +113,6 @@ class Subscription {
                 ),
               )
               .toSet(),
-      userSetting:
-          data['userSetting'] != null
-              ? UserSetting.fromJson(
-                data['userSetting'] as Map<String, dynamic>,
-              )
-              : _defaultUserSetting(), // Provide default if null
     );
   }
 
@@ -152,9 +124,7 @@ class Subscription {
       'subscriptionStatus': _subscriptionStatus,
       'notificationChannels':
           _notificationChannels.map((channel) => channel.name).toList(),
-      'alertPreferences': _alertPreferences.map((field) => field.name).toList(),
-      'fcmToken': _fcmToken,
-      'userSetting': _userSetting.toFirestore(),
+      'subscribedFields': _subscribedFields.map((field) => field.name).toList(),
     };
   }
 
